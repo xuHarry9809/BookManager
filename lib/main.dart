@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_widget/drawer_widget.dart';
 
 void main() => runApp(MyApp());
 
@@ -7,20 +8,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
+        highlightColor: Color.fromRGBO(255,255, 255,0.5),
+        splashColor: Colors.white70,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'NDB书籍管理'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
-
   final String title;
 
   @override
@@ -29,7 +29,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-
+  AccountInfoPage accountInfoPage  = new AccountInfoPage(username:'testuser',email:'testuser@163.com');
   void _incrementCounter() {
     setState(() {
 
@@ -39,33 +39,57 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          /*
+          leading: IconButton(
+              icon: Icon(Icons.menu),
+              tooltip: '账户',
+              onPressed: () => debugPrint('显示个人账户')
+          ),*/
+          title: Text(widget.title),
+          centerTitle: true,
 
-    return Scaffold(
-      appBar: AppBar(
+          actions: <Widget>[
 
-        title: Text(widget.title),
-      ),
-      body: Center(
-
-        child: Column(
-
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+            IconButton(
+                icon: Icon(Icons.search),
+                tooltip: '查找',
+                onPressed: () => debugPrint('查找书籍')
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
+
           ],
+          elevation: 20.0,//阴影
+          bottom: TabBar(
+            unselectedLabelColor: Colors.black12,
+            indicatorColor: Colors.white12,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicatorWeight: 2.0,
+            tabs: <Widget>[
+              Tab(icon:Icon(Icons.book),text: '全部',),
+              Tab(icon:Icon(Icons.bookmark_border),text: '在借',),
+              Tab(icon:Icon(Icons.library_books),text:'已还',),
+            ],
+            ),
         ),
+        body:TabBarView(
+            children: <Widget>[
+              Icon(Icons.book,size: 128.0,color: Colors.black12),
+              Icon(Icons.book,size: 128.0,color: Colors.red),
+              Icon(Icons.book,size: 128.0,color: Colors.red),
+            ],
+        ),
+        drawer:accountInfoPage,
+        floatingActionButton: FloatingActionButton(
+          onPressed: _incrementCounter,
+          tooltip: '扫描添加书籍',
+          child: Icon(Icons.add_a_photo),
+        ), // This trailing comma makes auto-formatting nicer for build methods.
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: '扫描添加书籍',
-        child: Icon(Icons.add_a_photo),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+
     );
+
   }
 }
