@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../db/dbutil.dart';
+import '../model/categorynode.dart';
+import 'forms/editcategory_form.dart';
 
 class AccountInfoPage extends StatefulWidget{
 
@@ -14,43 +17,110 @@ class AccountInfoPage extends StatefulWidget{
 }
 
 class _AccountInfoPageState extends State<AccountInfoPage>{
+
+  List<CategoryNode> category_list = new List();
   @override
   void initState(){
     super.initState();
+    getAllBookCategory();
   }
 
+  //get book category from db
+  void getAllBookCategory(){
+    dbutil.getAllBookCategory().then((categorynodes){
+      setState(() {
+        categorynodes.forEach((node){
+          category_list.add(CategoryNode.fromMap(node));
+        });
+      //  debugPrint(category_list.length.toString());
+      });
+    });
+  }
+
+  // add Drawer Widgets
   Widget build(BuildContext context){
         return  new Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
-            children: <Widget>[
-
-            UserAccountsDrawerHeader(
-               accountName: Text(widget.username,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16)),
-               accountEmail: Text(widget.email,style:TextStyle(fontSize: 12)),
-               currentAccountPicture: CircleAvatar(
-                 backgroundImage: new AssetImage('image/header3.jpeg'),
-                 radius: 35.0,
-               ),
-              decoration: BoxDecoration(
-                color: Colors.green[400],
-                image: DecorationImage(
-                    image:NetworkImage('https://cdn.pixabay.com/photo/2018/11/23/18/07/autumn-leaves-3834298_960_720.jpg'),
-                    fit:BoxFit.cover,
-                    colorFilter:ColorFilter.mode(
-                        Colors.green[400].withOpacity(0.6),
-                        BlendMode.hardLight,
-                    )
-                ),
-              ),
-            ),
-            new Divider(),
-            ListTile(
-                leading: new CircleAvatar(child:Icon(Icons.local_florist),backgroundColor: Colors.blue,),
-                title: Text('儿童文学',textAlign: TextAlign.left),
-              ),
-            ],
+            children: _buildDrawList(context),
           ),
         );
   }
+
+  List<Widget> _buildDrawList(BuildContext context){
+    List<Widget> children = [];
+    children..addAll(_buildUserAccount(context))
+      ..addAll(_buildActions(context))
+      ..addAll([new Divider()])
+      ..addAll(_buildBookCategory(context));
+    return children;
+  }
+
+  List<Widget> _buildUserAccount(BuildContext context){
+      return [
+        new UserAccountsDrawerHeader(
+          accountName: Text(widget.username,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.blue)),
+          accountEmail: Text(widget.email,style:TextStyle(fontSize: 12,color: Colors.blue)),
+          currentAccountPicture: CircleAvatar(
+            backgroundImage: new AssetImage('image/header3.jpeg'),
+            radius: 35.0,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.green[400],
+            image: DecorationImage(
+                image:NetworkImage('https://cdn.pixabay.com/photo/2018/11/23/18/07/autumn-leaves-3834298_960_720.jpg'),
+                fit:BoxFit.cover,
+                colorFilter:ColorFilter.mode(
+                  Colors.green[400].withOpacity(0.6),
+                  BlendMode.hardLight,
+                )
+            ),
+          ),
+        )
+      ];
+  }
+
+  List<Widget> _buildBookCategory(BuildContext context){
+     List<Widget> categoryListTiles = [];
+     
+     category_list.forEach((node){
+        categoryListTiles.add(
+            new ListTile(
+              trailing: /*new CircleAvatar(child:*/Icon(IconData(node.iconindex, fontFamily: 'MaterialIcons'))/*)*/,
+              title: Text(node.category,textAlign: TextAlign.left),
+            )
+        );
+     });
+
+     categoryListTiles.add(
+         new ListTile(
+           leading: Icon(Icons.add),
+           title: Text('添加/编辑分类',textAlign: TextAlign.center,style: TextStyle(color: Colors.red[900])),
+           onTap:() => _onTapCategoryEditForm(context),
+         )
+     );
+     return categoryListTiles;
+  }
+
+  _onTapCategoryEditForm(BuildContext context){
+     Navigator.pop(context);
+     Navigator.of(context).pushNamed(EditCategoryForm.routeName);
+  }
+  List<Widget> _buildActions(BuildContext context){
+    return [
+      new ListTile(
+        leading: Icon(Icons.account_circle),
+        title:Text('账户',textAlign: TextAlign.left,style: TextStyle(color: Colors.blue[800]))
+      ),
+      new ListTile(
+          leading: Icon(Icons.settings),
+          title:Text('设定',textAlign: TextAlign.left,style: TextStyle(color: Colors.blue[800]))
+      ),
+      new ListTile(
+          leading: Icon(Icons.search),
+          title:Text('搜索',textAlign: TextAlign.left,style: TextStyle(color: Colors.blue[800]))
+      )
+    ];
+  }
+
 }
