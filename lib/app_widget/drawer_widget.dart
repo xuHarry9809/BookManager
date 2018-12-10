@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../db/dbutil.dart';
+import '../util/dbutil.dart';
+import '../util/networkutil.dart';
 import '../model/categorynode.dart';
 import 'forms/editcategory_form.dart';
 
@@ -8,8 +9,14 @@ class AccountInfoPage extends StatefulWidget{
 
   final String username;
   final String email;
+  String image_url;
+  /*'https://cdn.pixabay.com/photo/2018/11/23/18/07/autumn-leaves-3834298_960_720.jpg'*/
   AccountInfoPage({this.username,this.email});
-
+  //set bing picture url
+  void setImageUrl(url){
+    image_url = url;
+  //  debugPrint(this.image_url);
+  }
   @override
   State<StatefulWidget> createState(){
       return new _AccountInfoPageState();
@@ -52,8 +59,20 @@ class _AccountInfoPageState extends State<AccountInfoPage>{
     children..addAll(_buildUserAccount(context))
       ..addAll(_buildActions(context))
       ..addAll([new Divider()])
-      ..addAll(_buildBookCategory(context));
+      ..addAll(_buildBookCategory(context))
+      ..addAll([new Divider()])
+      ..addAll(_buildBottomControl(context));
     return children;
+  }
+
+
+  List<Widget> _buildBottomControl(BuildContext context) {
+    return [
+      new ListTile(
+        trailing: Icon(Icons.help),
+        title: Text('关于',textAlign: TextAlign.left),
+      )
+    ];
   }
 
   List<Widget> _buildUserAccount(BuildContext context){
@@ -68,10 +87,10 @@ class _AccountInfoPageState extends State<AccountInfoPage>{
           decoration: BoxDecoration(
             color: Colors.green[400],
             image: DecorationImage(
-                image:NetworkImage('https://cdn.pixabay.com/photo/2018/11/23/18/07/autumn-leaves-3834298_960_720.jpg'),
+                image:NetworkImage(widget.image_url),
                 fit:BoxFit.cover,
                 colorFilter:ColorFilter.mode(
-                  Colors.green[400].withOpacity(0.6),
+                  Colors.green[100].withOpacity(0.3),
                   BlendMode.hardLight,
                 )
             ),

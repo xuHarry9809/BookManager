@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'drawer_widget.dart';
-import '../db/dbutil.dart';
+import '../util/dbutil.dart';
+import '../util/networkutil.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
@@ -20,11 +21,12 @@ class _MyHomePageState extends State<HomePage> {
     super.initState();
  //   dbutil.deleteDB();
     dbutil.init();
+    HttpUtil.getBingImageUrl().then((url){
+       accountInfoPage.setImageUrl(url);
+    });
   }
   void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+   // HttpUtil.getBingImageUrl();
   }
 
   @override
@@ -72,6 +74,7 @@ class _MyHomePageState extends State<HomePage> {
           ],
         ),
         drawer:accountInfoPage,
+
         floatingActionButton: FloatingActionButton(
           onPressed: _incrementCounter,
           tooltip: '扫描添加书籍',

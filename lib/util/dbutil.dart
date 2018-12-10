@@ -8,7 +8,6 @@ class dbutil{
   static final _DbName = 'bookmanager';
   static Database _database;
 
-
    static Future init() async{
     var databasepath = await getDatabasesPath();
     String dbpath = join(databasepath, _DbName);
@@ -32,20 +31,64 @@ class dbutil{
             debugPrint('create table success');
           }
     );
+ //   await _database.close();
   }
 
 
   //get all book category name
   static Future<List> getAllBookCategory() async{
-     var dbClinet = await _database;
-     var result = await dbClinet.query("bookcategory",columns: ['id','categoryname','iconindex']);
+
+     var dbClient = await _database;
+     var result = await dbClient.query("bookcategory",columns: ['id','categoryname','iconindex']);
+    // await dbClient.close();
      return result.toList();
   }
 
-  //remove the database
+  ///remove the database
   static Future deleteDB() async{
     var databasepath = await getDatabasesPath();
     String dbpath = join(databasepath, _DbName);
     await deleteDatabase(dbpath);
+  }
+
+  /// insert a new category
+  static Future<bool> insertCategory(String category,int iconindex) async{
+
+  /*  var databasepath = await getDatabasesPath();
+    String dbpath = join(databasepath, _DbName);*/
+
+    try {
+      var dbClient = await _database;
+      dbClient.transaction((txn) async {
+        await txn.rawInsert(
+            "INSERT INTO bookcategory(categoryname, iconindex) VALUES('$category',$iconindex)",
+        );
+      });
+     // await dbClient.close();
+      return true;
+    }catch(exception){
+      return false;
+    }
+  }
+
+  ///update category name
+  static Future<bool> updateCategory(String newcategory,int id) async{
+    try {
+      var dbClient = await _database;
+      dbClient.transaction((txn) async {
+        await txn.rawInsert(
+          "UPDATE bookcategory SET categoryname = '$newcategory' where id = $id",
+        );
+      });
+      return true;
+    }catch(exception){
+      return false;
+    }
+  }
+
+  ///close the database
+  static Future closeDB() async {
+    var dbClient = await _database;
+    dbClient.close();
   }
 }
