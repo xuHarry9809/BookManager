@@ -125,6 +125,7 @@ class _AccountInfoPageState extends State<AccountInfoPage>{
      Navigator.pop(context);
      Navigator.of(context).pushNamed(EditCategoryForm.routeName);
   }
+
   List<Widget> _buildActions(BuildContext context){
     return [
       new ListTile(

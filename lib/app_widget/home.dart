@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'drawer_widget.dart';
 import '../util/dbutil.dart';
 import '../util/networkutil.dart';
+import 'custcontroller/FancyFab.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
@@ -75,11 +76,11 @@ class _MyHomePageState extends State<HomePage> {
         ),
         drawer:accountInfoPage,
 
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: new FancyFab()/*FloatingActionButton(
           onPressed: _incrementCounter,
           tooltip: '扫描添加书籍',
           child: Icon(Icons.add_a_photo),
-        ), // This trailing comma makes auto-formatting nicer for build methods.
+        ),*/ // This trailing comma makes auto-formatting nicer for build methods.
       ),
 
     );

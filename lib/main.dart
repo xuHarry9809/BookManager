@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_widget/home.dart';
 import 'package:bookmanager/app_widget/forms/editcategory_form.dart';
+import 'package:bookmanager/app_widget/forms/addbook_form.dart';
 
 void main() => runApp(new MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -10,7 +11,8 @@ void main() => runApp(new MaterialApp(
       splashColor: Colors.white70,
     ),
     routes: <String,WidgetBuilder>{
-      EditCategoryForm.routeName:(BuildContext context) =>  new EditCategoryForm()
+      EditCategoryForm.routeName:(BuildContext context) =>  new EditCategoryForm(),
+      AddBookForm.routeName:(BuildContext context) => new AddBookForm()
     },
     home:HomePage(title: 'NDB书籍管理'),
 
