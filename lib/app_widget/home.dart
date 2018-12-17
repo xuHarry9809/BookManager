@@ -44,9 +44,7 @@ class _MyHomePageState extends State<HomePage> {
           ),*/
           title: Text(widget.title),
           centerTitle: true,
-
           actions: <Widget>[
-
             IconButton(
                 icon: Icon(Icons.search),
                 tooltip: '查找',

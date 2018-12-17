@@ -52,10 +52,10 @@ class EditCategoryFormState extends State<EditCategoryForm>{
       appBar: new AppBar(
           leading: new IconButton(
               icon: const Icon(Icons.close),
-              color:Colors.white,
+              color:Colors.black87,
               onPressed:() => _closeForm(context)),
-          title:new Text('添加/编辑分类',style: const TextStyle(color: Colors.white)),
-          backgroundColor: Colors.green[500],
+          title:new Text('添加/编辑分类',style: const TextStyle(color: Colors.black87)),
+          backgroundColor: Colors.green[300],
       ),
       body: new Container(
           child:new ListView(

@@ -85,7 +85,7 @@ class _AccountInfoPageState extends State<AccountInfoPage>{
             radius: 35.0,
           ),
           decoration: BoxDecoration(
-            color: Colors.green[400],
+            color: Colors.yellow,
             image: DecorationImage(
                 image:NetworkImage(widget.image_url),
                 fit:BoxFit.cover,
