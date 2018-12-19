@@ -11,7 +11,7 @@ class BookInfo{
   String _readStatus;     //阅读状态
   String _borrow_time;    //借入时间
   String _return_time;    //归还时间
-  String _buy_time;       //购买时间
+  //String _buy_time;       //购买时间
   String _source;         //书籍来源，如购买，赠送....
   int _Owner;             //所有者
   int _categoryId;        //书籍类别
@@ -29,7 +29,7 @@ class BookInfo{
   String get readStatus => _readStatus;
   String get borrow_time => _borrow_time;
   String get return_time => _return_time;
-  String get buy_time => _buy_time;
+ // String get buy_time => _buy_time;
   String get source => _source;
   int get Owner => _Owner;
   int get categoryId => _categoryId;
@@ -51,7 +51,7 @@ class BookInfo{
     map['readStatus'] = _readStatus;
     map['borrow_time'] = _borrow_time;
     map['return_time'] = _return_time;
-    map['buy_time'] = _buy_time;
+   // map['buy_time'] = _buy_time;
     map['source'] = _source;
     if(_Owner != null)
       map['Owner'] = _Owner;
@@ -75,7 +75,7 @@ class BookInfo{
     _readStatus = map['readStatus'];
     _borrow_time = map['borrow_time'];
     _return_time = map['return_time'];
-    _buy_time = map['buy_time'];
+    //_buy_time = map['buy_time'];
     _source = map['source'];
     _Owner = map['Owner'];
     _categoryId = map['categoryId'];

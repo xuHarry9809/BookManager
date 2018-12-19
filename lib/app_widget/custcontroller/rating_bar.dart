@@ -20,7 +20,7 @@ class RatingBar extends StatelessWidget {
       icName = Icons.star_half;
     }
 
-    return Icon(icName, size: 16.0, color: icColor);
+    return Icon(icName, size: 24.0, color: icColor);
   }
 
   @override

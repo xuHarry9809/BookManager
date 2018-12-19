@@ -55,7 +55,7 @@ class EditCategoryFormState extends State<EditCategoryForm>{
               color:Colors.black87,
               onPressed:() => _closeForm(context)),
           title:new Text('添加/编辑分类',style: const TextStyle(color: Colors.black87)),
-          backgroundColor: Colors.green[300],
+          backgroundColor: Colors.green,
       ),
       body: new Container(
           child:new ListView(
