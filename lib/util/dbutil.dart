@@ -19,6 +19,9 @@ class dbutil{
             await db.execute(
               "CREATE TABLE booktype(id INTEGER PRIMARY KEY, typename TEXT);"
             );
+            await db.execute(
+                "CREATE TABLE bookinfo(id INTEGER PRIMARY KEY, typename TEXT);"
+            );
             await db.transaction((txn) async{
               var batch = txn.batch();
               batch.insert("bookcategory", {"categoryname":"儿童文学","iconindex":58693});

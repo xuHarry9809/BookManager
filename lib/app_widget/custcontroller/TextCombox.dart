@@ -37,6 +37,7 @@ class _TextComboxState extends State<TextCombox>{
             categorynodes.forEach((node){
               select_list.add(CategoryNode.fromMap(node).category);
             });
+            _currentVal = select_list[0];
             //  debugPrint(category_list.length.toString());
           });
         });
@@ -51,13 +52,15 @@ class _TextComboxState extends State<TextCombox>{
   @override
   Widget build(BuildContext context){
       return new Container(
+
        // color: Colors.grey[500],
         padding: EdgeInsets.only(left: 16.0),
         child: new Row(
            // crossAxisAlignment: CrossAxisAlignment.start,
            // mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
-              new Text(widget.title,textAlign: TextAlign.left,style: TextStyle(fontSize: 16,color: Colors.black45),),
+              //new Text(widget.title,textAlign: TextAlign.left,style: TextStyle(fontSize: 16,color: Colors.black45),),
+              Icon(Icons.category,size: 32,color: Colors.black45),
               new Container(
                 padding: new EdgeInsets.all(5.0),
               ),
