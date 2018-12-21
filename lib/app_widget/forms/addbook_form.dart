@@ -6,15 +6,21 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
+
 //import 'package:flutter_date_picker/flutter_date_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../custcontroller/rating_bar.dart';
 import '../custcontroller/TextCombox.dart';
 import '../../util/dbutil.dart';
 import '../../model/categorynode.dart';
+import '../../model/book.dart';
 
 class AddBookForm extends StatefulWidget {
   static final String routeName = '/addbookform';
+
+  BookInfo bookinfo;
+
+  AddBookForm({this.bookinfo});
 
   @override
   State<StatefulWidget> createState() => new AddBookFormState();
@@ -26,6 +32,7 @@ class AddBookFormState extends State<AddBookForm> {
   List<Widget> widget_list = [];
   static final backColors = Colors.yellow[400];
   static final fontsize = 16.0;
+  static final String time_suffix = " 00:00:00";
 
   String error;
   TextEditingController bookname_controller = new TextEditingController();
@@ -35,19 +42,21 @@ class AddBookFormState extends State<AddBookForm> {
   TextEditingController buytime_controller = new TextEditingController();
   TextEditingController owner_controller = new TextEditingController();
   TextEditingController category_controller = new TextEditingController();
+  TextEditingController flag_controller = new TextEditingController();
+  TextEditingController remark_controller = new TextEditingController();
 
   static List<String> category_texts = [];
 
   TextCombox categroyCombo =
       new TextCombox(datasrc: TextCombox.CATEGORY, title: '书籍分类:');
 
-  int groupValue = 1;
+  String groupValue = '借阅';
   double favor_rating = 5;
   bool _isSaveButtonEnabled = false;
+  bool _isBorrowType = true;
 
   @override
   void initState() {
-
     initData();
     super.initState();
   }
@@ -242,11 +251,90 @@ class AddBookFormState extends State<AddBookForm> {
   void _updateRadioVal(val) {
     setState(() {
       this.groupValue = val;
+      if (this.groupValue != '借阅') {
+        _isBorrowType = false;
+        borrowtime_controller.clear();
+        returntime_controller.clear();
+      } else
+        _isBorrowType = true;
     });
   }
 
-  void _saveBookInfo(){
+  void _saveBookInfo() {
+    if(borrowtime_controller.text != null && returntime_controller.text != null){
+        DateTime borrowtime = DateTime.parse(borrowtime_controller.text + time_suffix);
+        DateTime returntime = DateTime.parse(returntime_controller.text + time_suffix);
+        if(borrowtime.isAfter(returntime)||borrowtime.isAtSameMomentAs(returntime)){
+          setState(() {
+            showDialog(
+                context: context,
+                child: new AlertDialog(
+                  content: new Text('借阅时间不能大于等于归还时间'),
+                  actions: <Widget>[
+                    new FlatButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: new Text('确定'))
+                  ],
+                ));
+          });
+          return;
+        }
+    }
+    if (widget.bookinfo == null) {
+      //debugPrint('create a new bookinfo');
+     /* widget.bookinfo = BookInfo.fromMap({
+        'bookname': bookname_controller.text,
+        'author':'',
+        'publishing':'',
+        'ISBN':'',
+        'public_time':'',
+        'favor_rate': favor_rating,
+        'borrow_time': borrowtime_controller.text,
+        'return_time': returntime_controller.text,
+        'source': groupValue,
+        'Owner': owner_controller.text,
+        'category': category_controller.text,
+        'flags': flag_controller.text,
+        //'image_index':-1,
+        'remark': remark_controller.text
+      });*/
+      widget.bookinfo = new BookInfo(null,
+                                     bookname_controller.text,
+                                     '',
+                                     '',
+                                     '',
+                                     '',
+                                     favor_rating,
+                                     borrowtime_controller.text,
+                                     returntime_controller.text,
+                                     groupValue,
+                                     owner_controller.text,
+                                     category_controller.text,
+                                     flag_controller.text,
+                                     remark_controller.text);
 
+      dbutil.insertBookInfo(widget.bookinfo).then((retVal) {
+        String message = '添加书籍成功';
+        if (retVal < 0) message = '添加书籍失败';
+
+        setState(() {
+          showDialog(
+              context: context,
+              child: new AlertDialog(
+                content: new Text(message),
+                actions: <Widget>[
+                  new FlatButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: new Text('确定'))
+                ],
+              ));
+        });
+      });
+    }
   }
 
   Widget _buildbottomContent() {
@@ -265,16 +353,19 @@ class AddBookFormState extends State<AddBookForm> {
               new RaisedButton(
                   color: Colors.green,
                   padding: EdgeInsets.all(5.0),
-                  child:Text('保存', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: Text('保存',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   textColor: Colors.white,
-                  //  textTheme:ButtonTextTheme.primary ,//按钮的主题
-                  //  highlightColor: Colors.blueAccent,
-                  colorBrightness: Brightness.light, //按钮主题高亮
-                  elevation: 10.0, //按钮下面的阴影
-                  highlightElevation: 10.0, //高亮时候的阴影
-                  disabledElevation: 10.0, //按下的时候的阴影
-                  onPressed: _isSaveButtonEnabled ? null : _saveBookInfo
-              ),
+                  colorBrightness: Brightness.light,
+                  //按钮主题高亮
+                  elevation: 10.0,
+                  //按钮下面的阴影
+                  highlightElevation: 10.0,
+                  //高亮时候的阴影
+                  disabledElevation: 10.0,
+                  //按下的时候的阴影
+                  onPressed: _isSaveButtonEnabled ? _saveBookInfo : null),
               Spacer(),
               Text('书籍详情    ',
                   style: TextStyle(fontSize: 20, color: Colors.black45)),
@@ -288,37 +379,37 @@ class AddBookFormState extends State<AddBookForm> {
               Flexible(
                   flex: 1,
                   child: RadioListTile(
-                      value: 1,
+                      value: '借阅',
                       groupValue: groupValue,
                       title: Text('借阅'),
-                      onChanged: (int val) {
+                      onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
               Flexible(
                   flex: 1,
                   child: RadioListTile(
-                      value: 2,
+                      value: '购买',
                       groupValue: groupValue,
                       title: Text('购买'),
-                      onChanged: (int val) {
+                      onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
               Flexible(
                   flex: 1,
                   child: RadioListTile(
-                      value: 3,
+                      value: '赠送',
                       groupValue: groupValue,
                       title: Text('赠送'),
-                      onChanged: (int val) {
+                      onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
               Flexible(
                   flex: 1,
                   child: RadioListTile(
-                      value: 4,
+                      value: '其他',
                       groupValue: groupValue,
                       title: Text('其他'),
-                      onChanged: (int val) {
+                      onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
             ],
@@ -331,7 +422,17 @@ class AddBookFormState extends State<AddBookForm> {
                       leading: Icon(Icons.assignment, size: 32),
                       title: TextField(
                         controller: bookname_controller,
-                        onChanged: (text) {},
+                        onChanged: (text) {
+                          if (text != null && text.length > 0) {
+                            setState(() {
+                              _isSaveButtonEnabled = true;
+                            });
+                          } else {
+                            setState(() {
+                              _isSaveButtonEnabled = false;
+                            });
+                          }
+                        },
                         style: new TextStyle(
                             fontSize: fontsize, color: Colors.grey),
                         decoration: new InputDecoration(
@@ -372,30 +473,23 @@ class AddBookFormState extends State<AddBookForm> {
                       //counterText: categorynodes_list[i].category
                     ),
                   ),
-                  trailing: IconButton(
+                  trailing: new IconButton(
                       icon: Icon(Icons.date_range),
                       color: Colors.green,
-                      onPressed: () {
-                        DatePicker.showDatePicker(context,
-                            showTitleActions: true, onChanged: (date) {
-                          borrowtime_controller.text =
-                              DateFormat('yyyy-MM-dd').format(date);
-                        }, onConfirm: (date) {
-                          borrowtime_controller.text =
-                              DateFormat('yyyy-MM-dd').format(date);
-                        }, currentTime: DateTime.now(), locale: LocaleType.zh);
-                        /*showDatePicker(
-                                context: context,
-                                initialDate: new DateTime.now(),
-                                firstDate: new DateTime.now()
-                                    .subtract(new Duration(days: 3650)),
-                                lastDate: new DateTime.now()
-                                    .add(new Duration(days: 3650)))
-                            .then((DateTime val) {
-                          borrowtime_controller.text =
-                              DateFormat('yyyy-MM-dd').format(val);
-                        }).catchError((err) {});*/
-                      }),
+                      onPressed: _isBorrowType
+                          ? () {
+                              DatePicker.showDatePicker(context,
+                                  showTitleActions: true, onChanged: (date) {
+                                borrowtime_controller.text =
+                                    DateFormat('yyyy-MM-dd').format(date);
+                              }, onConfirm: (date) {
+                                borrowtime_controller.text =
+                                    DateFormat('yyyy-MM-dd').format(date);
+                              },
+                                  currentTime: DateTime.now(),
+                                  locale: LocaleType.zh);
+                            }
+                          : null),
                 ),
               ),
               Flexible(
@@ -419,16 +513,19 @@ class AddBookFormState extends State<AddBookForm> {
                   trailing: IconButton(
                       icon: Icon(Icons.date_range),
                       color: Colors.green,
-                      onPressed: () {
-                        DatePicker.showDatePicker(context,
-                            showTitleActions: true, onChanged: (date) {
-                          returntime_controller.text =
-                              DateFormat('yyyy-MM-dd').format(date);
-                        }, onConfirm: (date) {
-                          returntime_controller.text =
-                              DateFormat('yyyy-MM-dd').format(date);
-                        }, currentTime: DateTime.now(), locale: LocaleType.zh);
-                        /*   showDatePicker(
+                      onPressed: _isBorrowType
+                          ? () {
+                              DatePicker.showDatePicker(context,
+                                  showTitleActions: true, onChanged: (date) {
+                                returntime_controller.text =
+                                    DateFormat('yyyy-MM-dd').format(date);
+                              }, onConfirm: (date) {
+                                returntime_controller.text =
+                                    DateFormat('yyyy-MM-dd').format(date);
+                              },
+                                  currentTime: DateTime.now(),
+                                  locale: LocaleType.zh);
+                              /*   showDatePicker(
                                 context: context,
                                 initialDate: new DateTime.now(),
                                 firstDate: new DateTime.now()
@@ -439,7 +536,8 @@ class AddBookFormState extends State<AddBookForm> {
                           returntime_controller.text =
                               DateFormat('yyyy-MM-dd').format(val);
                         }).catchError((err) {});*/
-                      }),
+                            }
+                          : null),
                 ),
               )
             ],
@@ -457,6 +555,10 @@ class AddBookFormState extends State<AddBookForm> {
                     ),
                     title: TextField(
                       controller: category_controller,
+                      //任意写一个正则表达式，限制用户手动输入，选择输入不受影响
+                      inputFormatters: [
+                        WhitelistingTextInputFormatter(RegExp('dddd-dd-dd'))
+                      ],
                       style:
                           new TextStyle(fontSize: fontsize, color: Colors.grey),
                       decoration: new InputDecoration(
@@ -468,7 +570,7 @@ class AddBookFormState extends State<AddBookForm> {
                     ),
                     trailing: PopupMenuButton<String>(
                       icon: Icon(
-                        Icons.arrow_drop_down_circle,
+                        Icons.arrow_drop_down,
                         size: 32,
                         color: Colors.green,
                       ),
@@ -494,7 +596,7 @@ class AddBookFormState extends State<AddBookForm> {
                         new TextStyle(fontSize: fontsize, color: Colors.grey),
                     decoration: new InputDecoration(
                       border: null,
-                      labelText: '所有人',
+                      labelText: '书籍所有人',
                       errorText: error,
                       //counterText: categorynodes_list[i].category
                     ),
@@ -510,7 +612,7 @@ class AddBookFormState extends State<AddBookForm> {
                   child: new ListTile(
                       leading: Icon(Icons.flag, size: 32),
                       title: TextField(
-                        controller: bookname_controller,
+                        controller: flag_controller,
                         style: new TextStyle(
                             fontSize: fontsize, color: Colors.grey),
                         decoration: new InputDecoration(
@@ -555,7 +657,7 @@ class AddBookFormState extends State<AddBookForm> {
           new ListTile(
               leading: Icon(Icons.comment, size: 32),
               title: TextField(
-                controller: bookname_controller,
+                controller: remark_controller,
                 style: new TextStyle(fontSize: fontsize, color: Colors.grey),
                 decoration: new InputDecoration(
                   border: null,
@@ -583,6 +685,7 @@ class AddBookFormState extends State<AddBookForm> {
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
         ),
       );
+
   @override
   Widget build(BuildContext context) {
     //final topRight =

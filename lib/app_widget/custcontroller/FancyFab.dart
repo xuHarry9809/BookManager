@@ -79,7 +79,7 @@ class _FancyFabState extends State<FancyFab>
           //Navigator.pop(context);
           Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddBookForm())
+                MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: null,))
           );
         },
         tooltip: '手动录入',

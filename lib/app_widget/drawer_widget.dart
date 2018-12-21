@@ -114,7 +114,7 @@ class _AccountInfoPageState extends State<AccountInfoPage>{
      categoryListTiles.add(
          new ListTile(
            leading: Icon(Icons.add),
-           title: Text('添加/编辑分类',textAlign: TextAlign.center,style: TextStyle(color: Colors.red[900])),
+           title: Text('添加/编辑分类',textAlign: TextAlign.center,style: TextStyle(color: Colors.green)),
            onTap:() => _onTapCategoryEditForm(context),
          )
      );

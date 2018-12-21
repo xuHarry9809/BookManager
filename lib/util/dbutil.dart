@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../model/book.dart';
 
 class dbutil{
 
   static final _VERSION = 1;
   static final _DbName = 'bookmanager';
+  static final _BookInfoTable = 'bookinfo';
   static Database _database;
 
    static Future init() async{
@@ -19,9 +21,17 @@ class dbutil{
             await db.execute(
               "CREATE TABLE booktype(id INTEGER PRIMARY KEY, typename TEXT);"
             );
+
+            //create bookinfo table
             await db.execute(
-                "CREATE TABLE bookinfo(id INTEGER PRIMARY KEY, typename TEXT);"
+                "CREATE TABLE bookinfo(id INTEGER PRIMARY KEY, bookname TEXT,author TEXT, publishing TEXT, ISBN TEXT, public_time TEXT, favor_rate DOUBLE, borrow_time TEXT,return_time TEXT,source TEXT, Owner TEXT,category TEXT,flags TEXT,remark TEXT );"
             );
+
+            //create book image table
+            await db.execute(
+                "CREATE TABLE bookimage(id INTEGER PRIMARY KEY, imagecontent TEXT);"
+            );
+
             await db.transaction((txn) async{
               var batch = txn.batch();
               batch.insert("bookcategory", {"categoryname":"儿童文学","iconindex":58693});
@@ -72,6 +82,37 @@ class dbutil{
     }catch(exception){
       return false;
     }
+  }
+
+  /// insert a bookinfo object
+  static Future<int> insertBookInfo(BookInfo bookinfo) async{
+
+      var resultId = -1;
+      try {
+        var dbClient = await _database;
+        String bookname = bookinfo.bookname;
+        double favor_rate = bookinfo.favor_rate;
+        String borrow_time = bookinfo.borrow_time;
+        String return_time = bookinfo.return_time;
+        String source = bookinfo.source;
+        String owner = bookinfo.Owner;
+        String category = bookinfo.category;
+        String flags = bookinfo.flags;
+        String remark = bookinfo.remark;
+
+        dbClient.transaction((txn) async {
+           await txn.rawInsert(
+            "INSERT INTO bookinfo(bookname,favor_rate,borrow_time,return_time,source,owner,category,flags,remark) VALUES('$bookname',$favor_rate,'$borrow_time','$return_time','$source','$owner','$category','$flags','$remark' )",
+          ).then((retVal){
+             resultId = retVal;
+           });
+        });
+        return resultId;
+
+      }catch(exception){
+        debugPrint(exception.toString());
+        return -1;
+      }
   }
 
   ///update category name
