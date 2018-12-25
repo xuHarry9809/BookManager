@@ -249,11 +249,44 @@ class AddBookFormState extends State<AddBookForm> {
   }
 
   Future _selectImage() async{
-      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+      showModalBottomSheet(
+         context: context,
+         builder:(BuildContext context) {
+            return new Container(
+              height: 200,
+              child:  new Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                       padding:EdgeInsets.only(bottom: 50),
+                       child:IconButton(
+                            icon: Icon(Icons.photo_album, size: 96, color: Colors.green),
+                            tooltip: '相册',
+                            onPressed:null
+                       )
+                    ),
+                    flex: 1,
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child:Container(
+                        padding:EdgeInsets.only(bottom: 40),
+                        child:IconButton(
+                          icon: Icon(Icons.camera_alt, size: 96, color: Colors.green),
+                          tooltip: '摄像头',
+                          onPressed:null
+                        )
+                    ),
+                  )
+                ],
+              ),
+            );
+         });
+      /*var image = await ImagePicker.pickImage(source: ImageSource.gallery);
       setState(() {
          _image = image;
          _image_tip = '待保存图片';
-      });
+      });*/
   }
 
   void _saveBookInfo() {
@@ -395,6 +428,40 @@ class AddBookFormState extends State<AddBookForm> {
             ],
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                  flex: 1,
+                  child: Row(
+                    children: <Widget>[
+                      SizedBox(width: 16),
+                      Flexible(
+                          flex: 1,
+                          child: Text(
+                            '推荐指数',
+                            style: TextStyle(
+                                fontSize: fontsize, color: Colors.black45),
+                          )),
+                      SizedBox(width: 16),
+                      Flexible(
+                          flex: 2,
+                          child: SmoothStarRating(
+                            allowHalfRating: true,
+                            onRatingChanged: (v) {
+                              favor_rating = v;
+                              setState(() {});
+                            },
+                            starCount: 3,
+                            rating: favor_rating,
+                            size: 32,
+                            color: Colors.red[700],
+                            borderColor: Colors.green,
+                          ))
+                    ],
+                  ))
+            ],
+          ),
+          Row(
             children: <Widget>[
               Flexible(
                   flex: 8,
@@ -435,7 +502,7 @@ class AddBookFormState extends State<AddBookForm> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Flexible(
-                flex: 2,
+                flex: 1,
                 child: new ListTile(
                   leading: Icon(Icons.brightness_high, size: 32),
                   title: TextField(
@@ -472,8 +539,13 @@ class AddBookFormState extends State<AddBookForm> {
                           : null),
                 ),
               ),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
               Flexible(
-                flex: 2,
+                flex: 1,
                 child: new ListTile(
                   leading: Icon(Icons.brightness_5, size: 32),
                   title: TextField(
@@ -482,7 +554,7 @@ class AddBookFormState extends State<AddBookForm> {
                       WhitelistingTextInputFormatter(RegExp('dddd-dd-dd'))
                     ],
                     style:
-                        new TextStyle(fontSize: fontsize, color: Colors.grey),
+                    new TextStyle(fontSize: fontsize, color: Colors.grey),
                     decoration: new InputDecoration(
                       border: null,
                       labelText: '归还时间',
@@ -495,17 +567,17 @@ class AddBookFormState extends State<AddBookForm> {
                       color: Colors.green,
                       onPressed: _isBorrowType
                           ? () {
-                              DatePicker.showDatePicker(context,
-                                  showTitleActions: true, onChanged: (date) {
-                                returntime_controller.text =
-                                    DateFormat('yyyy-MM-dd').format(date);
-                              }, onConfirm: (date) {
-                                returntime_controller.text =
-                                    DateFormat('yyyy-MM-dd').format(date);
-                              },
-                                  currentTime: DateTime.now(),
-                                  locale: LocaleType.zh);
-                              /*   showDatePicker(
+                        DatePicker.showDatePicker(context,
+                            showTitleActions: true, onChanged: (date) {
+                              returntime_controller.text =
+                                  DateFormat('yyyy-MM-dd').format(date);
+                            }, onConfirm: (date) {
+                              returntime_controller.text =
+                                  DateFormat('yyyy-MM-dd').format(date);
+                            },
+                            currentTime: DateTime.now(),
+                            locale: LocaleType.zh);
+                        /*   showDatePicker(
                                 context: context,
                                 initialDate: new DateTime.now(),
                                 firstDate: new DateTime.now()
@@ -516,7 +588,7 @@ class AddBookFormState extends State<AddBookForm> {
                           returntime_controller.text =
                               DateFormat('yyyy-MM-dd').format(val);
                         }).catchError((err) {});*/
-                            }
+                      }
                           : null),
                 ),
               )
@@ -526,7 +598,7 @@ class AddBookFormState extends State<AddBookForm> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Flexible(
-                  flex: 2,
+                  flex: 1,
                   //  child:Container(child:categroyCombo)
                   child: ListTile(
                     leading: Icon(
@@ -566,14 +638,19 @@ class AddBookFormState extends State<AddBookForm> {
                       },
                     ),
                   )),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
               Flexible(
-                flex: 2,
+                flex: 1,
                 child: new ListTile(
                   leading: Icon(Icons.person_add, size: 32),
                   title: TextField(
                     controller: owner_controller,
                     style:
-                        new TextStyle(fontSize: fontsize, color: Colors.grey),
+                    new TextStyle(fontSize: fontsize, color: Colors.grey),
                     decoration: new InputDecoration(
                       border: null,
                       labelText: '书籍所有人',
@@ -602,38 +679,9 @@ class AddBookFormState extends State<AddBookForm> {
                           //counterText: categorynodes_list[i].category
                         ),
                       ))),
-              Flexible(
-                  flex: 1,
-                  child: Row(
-                    children: <Widget>[
-                      SizedBox(width: 32),
-                      Flexible(
-                          flex: 1,
-                          child: Text(
-                            '推荐指数',
-                            style: TextStyle(
-                                fontSize: fontsize, color: Colors.black45),
-                          )),
-                      SizedBox(width: 16),
-                      Flexible(
-                          flex: 2,
-                          child: SmoothStarRating(
-                            allowHalfRating: true,
-                            onRatingChanged: (v) {
-                              favor_rating = v;
-                              setState(() {});
-                            },
-                            starCount: 3,
-                            rating: favor_rating,
-                            size: 32,
-                            color: Colors.red[700],
-                            borderColor: Colors.green,
-                          ))
-                    ],
-                  ))
+
             ],
           ),
-
           new ListTile(
               leading: Icon(Icons.comment, size: 32),
               title: TextField(
