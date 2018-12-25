@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
-
+import 'package:fluttertoast/fluttertoast.dart';
 //import 'package:flutter_date_picker/flutter_date_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../custcontroller/rating_bar.dart';
@@ -45,6 +45,8 @@ class AddBookFormState extends State<AddBookForm> {
   TextEditingController flag_controller = new TextEditingController();
   TextEditingController remark_controller = new TextEditingController();
 
+  File _image;
+  String _image_tip = '请添加图片';
   static List<String> category_texts = [];
 
   TextCombox categroyCombo =
@@ -54,6 +56,7 @@ class AddBookFormState extends State<AddBookForm> {
   double favor_rating = 5;
   bool _isSaveButtonEnabled = false;
   bool _isBorrowType = true;
+
 
   @override
   void initState() {
@@ -68,7 +71,7 @@ class AddBookFormState extends State<AddBookForm> {
   }
 
   void initData() {
-    //borrowtime_controller.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
     dbutil.getAllBookCategory().then((categorynodes) {
       setState(() {
         category_texts.clear();
@@ -81,136 +84,118 @@ class AddBookFormState extends State<AddBookForm> {
     });
   }
 
-  List<Widget> _buildWidget() {
-    widget_list = [];
-    widget_list..addAll(_buildBookBaseInfo());
-  }
-
-  Widget _previewImage() {
-    return FutureBuilder<File>(
-        future: _imageFile,
-        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.data != null) {
-            return Image.file(snapshot.data);
-          } else if (snapshot.error != null) {
-            return new Icon(Icons.book, size: 144);
-          } else {
-            return new Image(
-              image: AssetImage('image/bookcover.jpg'),
-              fit: BoxFit.cover,
-            );
-          }
-        });
-  }
-
-  List<Widget> _buildBookBaseInfo() {
-    return [
-      new Column(
-        children: <Widget>[
-          new Container(
-            child: _previewImage(),
-          ),
-        ],
-      )
-    ];
-  }
-
   Widget _buildTopRight() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        text('书名',
-            //color: Colors.white,
-            size: 18,
-            isBold: true,
-            padding: EdgeInsets.only(top: 16.0)),
-        text(
-          '作者',
-          //  color: Colors.white,
-          size: 16,
-          padding: EdgeInsets.only(top: 8.0, bottom: 16.0),
-        ),
-        text(
-          '出版社',
-          // color: Colors.white,
-          size: 16,
-          padding: EdgeInsets.only(top: 0, bottom: 16.0),
-        ),
-        text(
-          '出版时间',
-          //   color: Colors.white,
-          size: 16,
-          padding: EdgeInsets.only(top: 0, bottom: 16.0),
-        ),
-        text(
-          'ISBN:890412345',
-          //  color: Colors.white,
-          size: 16,
-          padding: EdgeInsets.only(top: 0, bottom: 16.0),
-        ),
+        _buildtextline('书名',0),
+        _buildtextline('作者',1),
+        _buildtextline('出版社',2),
+        _buildtextline('出版时间',3),
+        _buildtextline('ISBN',4),
         Row(
           children: <Widget>[
             text(
               '推荐指数',
+              size: 16,
               isBold: true,
               padding: EdgeInsets.only(right: 8.0),
             ),
-            RatingBar(color: Colors.red[800], starCount: 3, rating: 2.5)
+            RatingBar(color: Colors.red[800], starCount: 3, rating: widget.bookinfo == null? 0:widget.bookinfo.favor_rate)
           ],
         ),
         SizedBox(height: 32.0),
         Row(
-          children: <Widget>[
-            Material(
-              borderRadius: BorderRadius.circular(20.0),
-              shadowColor: Colors.black87,
-              color: Colors.blue,
-              elevation: 15.0,
-              child: Padding(
-                  padding: const EdgeInsets.only(right: 0),
-                  child: Chip(
-                    label: Text('儿童文学'),
-                    padding: EdgeInsets.all(8.0),
-                    labelStyle: TextStyle(fontSize: 20, color: Colors.white),
-                    backgroundColor: Colors.blue,
-                  )),
-            ),
-            SizedBox(width: 8.0),
-            Material(
-              borderRadius: BorderRadius.circular(20.0),
-              shadowColor: Colors.black87,
-              color: Colors.red[400],
-              elevation: 15.0,
-              child: Padding(
-                  padding: const EdgeInsets.only(left: 0),
-                  child: Chip(
-                    label: Text('课外读物'),
-                    padding: EdgeInsets.all(8.0),
-                    labelStyle: TextStyle(fontSize: 20, color: Colors.white),
-                    backgroundColor: Colors.red[400],
-                  )),
-            )
-          ],
+          children: _buildcategoryandflags()
         )
-
-        /*Material(
-          borderRadius: BorderRadius.circular(20.0),
-          shadowColor: Colors.blue.shade200,
-          color: Colors.blue,
-          elevation: 5.0,
-          child: MaterialButton(
-            onPressed: () {},
-            minWidth: 160.0,
-            height: 40.0,
-            color: Colors.blue,
-            child: text('BUY IT NOW', color: Colors.white, size: 13),
-          ),
-        )*/
       ],
     );
   }
 
+  Widget _buildtextline(String default_text,int info_type) {
+
+      bool _isBold = false;
+      double top_margin = 8.0;
+
+      if(info_type == 0) {
+        top_margin = 16.0;
+        _isBold = true;
+      }
+
+      if (widget.bookinfo == null) {
+        return text(
+          default_text,
+          size: 16,
+          isBold: _isBold,
+          padding: EdgeInsets.only(top: top_margin, bottom: 16.0),
+        );
+      } else {
+        String text_val = '';
+        switch(info_type) {
+          case 0:
+            text_val = widget.bookinfo.bookname;
+            break;
+          case 1:
+            text_val = widget.bookinfo.author;
+            break;
+          case 2:
+            text_val = widget.bookinfo.publishing;
+            break;
+          case 3:
+            text_val = widget.bookinfo.public_time;
+            break;
+          case 4:
+            text_val = widget.bookinfo.ISBN;
+            break;
+        }
+        if(text_val.length > 0)
+          return text(
+              text_val,
+              isBold: _isBold,
+              size: 16,
+              padding: EdgeInsets.only(top: top_margin, bottom: 16.0),
+          );
+        else
+          return Container(width:0,height:0);
+      }
+  }
+
+  List<Widget> _buildcategoryandflags(){
+     if(widget.bookinfo != null){
+       return [
+         Material(
+           borderRadius: BorderRadius.circular(20.0),
+           shadowColor: Colors.black87,
+           color: Colors.blue,
+           elevation: 15.0,
+           child: Padding(
+               padding: const EdgeInsets.only(right: 0),
+               child: Chip(
+                 label: Text(widget.bookinfo.category),
+                 padding: EdgeInsets.all(8.0),
+                 labelStyle: TextStyle(fontSize: 20, color: Colors.white),
+                 backgroundColor: Colors.blue,
+               )),
+         ),
+         SizedBox(width: 8.0),
+         Material(
+           borderRadius: BorderRadius.circular(20.0),
+           shadowColor: Colors.black87,
+           color: Colors.red[400],
+           elevation: 15.0,
+           child: Padding(
+               padding: const EdgeInsets.only(left: 0),
+               child: Chip(
+                 label: Text(widget.bookinfo.flags),
+                 padding: EdgeInsets.all(8.0),
+                 labelStyle: TextStyle(fontSize: 20, color: Colors.white),
+                 backgroundColor: Colors.red[400],
+               )),
+         )
+       ];
+     }else
+        return [];
+  }
   Widget _buildTopLeft() {
     return Column(
       children: <Widget>[
@@ -221,15 +206,18 @@ class AddBookFormState extends State<AddBookForm> {
             child: Material(
               elevation: 15.0,
               shadowColor: Colors.yellow.shade900,
-              child: Image(
-                //height: 256,
-                image: AssetImage('image/bookcover.jpg'),
-                fit: BoxFit.cover,
+              child: Container(
+                  color: Colors.white,
+                  padding: EdgeInsets.all(5),
+                  child:Image(
+                     image: _image == null?AssetImage('image/bookcover.jpg'):FileImage(_image),
+                     fit: BoxFit.cover,
+                  )
               ),
             ),
           ),
         ),
-        text('示例图片', color: Colors.black45, size: 12)
+        text(_image_tip, color: Colors.black45, size: 12)
       ],
     );
   }
@@ -260,8 +248,17 @@ class AddBookFormState extends State<AddBookForm> {
     });
   }
 
+  Future _selectImage() async{
+      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+      setState(() {
+         _image = image;
+         _image_tip = '待保存图片';
+      });
+  }
+
   void _saveBookInfo() {
-    if(borrowtime_controller.text != null && returntime_controller.text != null){
+    if(borrowtime_controller.text != null && borrowtime_controller.text.length > 0
+        && returntime_controller.text != null && returntime_controller.text.length > 0 ){
         DateTime borrowtime = DateTime.parse(borrowtime_controller.text + time_suffix);
         DateTime returntime = DateTime.parse(returntime_controller.text + time_suffix);
         if(borrowtime.isAfter(returntime)||borrowtime.isAtSameMomentAs(returntime)){
@@ -283,24 +280,7 @@ class AddBookFormState extends State<AddBookForm> {
         }
     }
     if (widget.bookinfo == null) {
-      //debugPrint('create a new bookinfo');
-     /* widget.bookinfo = BookInfo.fromMap({
-        'bookname': bookname_controller.text,
-        'author':'',
-        'publishing':'',
-        'ISBN':'',
-        'public_time':'',
-        'favor_rate': favor_rating,
-        'borrow_time': borrowtime_controller.text,
-        'return_time': returntime_controller.text,
-        'source': groupValue,
-        'Owner': owner_controller.text,
-        'category': category_controller.text,
-        'flags': flag_controller.text,
-        //'image_index':-1,
-        'remark': remark_controller.text
-      });*/
-      widget.bookinfo = new BookInfo(null,
+        widget.bookinfo = new BookInfo(null,
                                      bookname_controller.text,
                                      '',
                                      '',
@@ -315,24 +295,24 @@ class AddBookFormState extends State<AddBookForm> {
                                      flag_controller.text,
                                      remark_controller.text);
 
-      dbutil.insertBookInfo(widget.bookinfo).then((retVal) {
-        String message = '添加书籍成功';
-        if (retVal < 0) message = '添加书籍失败';
-
-        setState(() {
-          showDialog(
-              context: context,
-              child: new AlertDialog(
-                content: new Text(message),
-                actions: <Widget>[
-                  new FlatButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: new Text('确定'))
-                ],
-              ));
-        });
+        dbutil.insertBookInfo(widget.bookinfo).then((retVal) {
+            String message = '添加书籍成功';
+            var back_color = Colors.green;
+            if (retVal < 0) {
+              message = '添加书籍失败';
+              back_color = Colors.red;
+            }
+            setState(() {
+               Fluttertoast.showToast(
+                  msg: message,
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIos: 1,
+                  backgroundColor: back_color,
+                  textColor:Colors.white
+               );
+              _buildtopContent();
+            });
       });
     }
   }
@@ -447,7 +427,7 @@ class AddBookFormState extends State<AddBookForm> {
                   child: IconButton(
                       icon: Icon(Icons.image, size: 32, color: Colors.green),
                       tooltip: '添加书籍图片',
-                      onPressed: null))
+                      onPressed: _selectImage))
             ],
           ),
 

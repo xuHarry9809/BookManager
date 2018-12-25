@@ -23,7 +23,7 @@ class _MyHomePageState extends State<HomePage> {
    // dbutil.deleteDB();
     dbutil.init();
     HttpUtil.getBingImageUrl().then((url){
-       accountInfoPage.setImageUrl(url);
+        accountInfoPage.setImageUrl(url);
     });
   }
   void _incrementCounter() {

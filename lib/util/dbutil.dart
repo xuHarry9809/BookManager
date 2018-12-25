@@ -87,7 +87,7 @@ class dbutil{
   /// insert a bookinfo object
   static Future<int> insertBookInfo(BookInfo bookinfo) async{
 
-      var resultId = -1;
+      int resultId = -1;
       try {
         var dbClient = await _database;
         String bookname = bookinfo.bookname;
@@ -100,14 +100,12 @@ class dbutil{
         String flags = bookinfo.flags;
         String remark = bookinfo.remark;
 
-        dbClient.transaction((txn) async {
-           await txn.rawInsert(
+        resultId = await dbClient.rawInsert(
             "INSERT INTO bookinfo(bookname,favor_rate,borrow_time,return_time,source,owner,category,flags,remark) VALUES('$bookname',$favor_rate,'$borrow_time','$return_time','$source','$owner','$category','$flags','$remark' )",
-          ).then((retVal){
-             resultId = retVal;
-           });
-        });
-        return resultId;
+        );
+
+       // resultId = await dbClient.insert(_BookInfoTable, bookinfo.toMap(),{""});
+         return resultId;
 
       }catch(exception){
         debugPrint(exception.toString());

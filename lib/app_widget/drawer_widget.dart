@@ -9,12 +9,12 @@ class AccountInfoPage extends StatefulWidget{
 
   final String username;
   final String email;
-  String image_url;
+  String image_url = "";
   /*'https://cdn.pixabay.com/photo/2018/11/23/18/07/autumn-leaves-3834298_960_720.jpg'*/
   AccountInfoPage({this.username,this.email});
   //set bing picture url
-  void setImageUrl(url){
-    image_url = url;
+  void setImageUrl(String url){
+      image_url = url;
   //  debugPrint(this.image_url);
   }
   @override
@@ -87,7 +87,7 @@ class _AccountInfoPageState extends State<AccountInfoPage>{
           decoration: BoxDecoration(
             color: Colors.yellow,
             image: DecorationImage(
-                image:NetworkImage(widget.image_url),
+                image:widget.image_url == "" ? AssetImage('image/drawer_back.jpg'):NetworkImage(widget.image_url),
                 fit:BoxFit.cover,
                 colorFilter:ColorFilter.mode(
                   Colors.green[100].withOpacity(0.3),
