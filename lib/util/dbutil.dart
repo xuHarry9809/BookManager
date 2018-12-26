@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -24,7 +26,7 @@ class dbutil{
 
             //create bookinfo table
             await db.execute(
-                "CREATE TABLE bookinfo(id INTEGER PRIMARY KEY, bookname TEXT,author TEXT, publishing TEXT, ISBN TEXT, public_time TEXT, favor_rate DOUBLE, borrow_time TEXT,return_time TEXT,source TEXT, Owner TEXT,category TEXT,flags TEXT,remark TEXT );"
+                "CREATE TABLE bookinfo(id INTEGER PRIMARY KEY, bookname TEXT,author TEXT, publishing TEXT, ISBN TEXT, public_time TEXT, favor_rate DOUBLE, borrow_time TEXT,return_time TEXT,source TEXT, Owner TEXT,category TEXT,flags TEXT,imageindex INTEGER,remark TEXT );"
             );
 
             //create book image table
@@ -84,6 +86,27 @@ class dbutil{
     }
   }
 
+  //insert book cover image
+  static Future<int> insertImage(File imageData,int bookId) async{
+     int imageId = -1;
+     try{
+       var dbClient = await _database;
+       String content = base64.encode(imageData.readAsBytesSync());
+       imageId = await dbClient.rawInsert(
+         "INSERT INTO bookimage(imagecontent) VALUES('$content')",
+       );
+
+       if(imageId > 0 ){
+          await dbClient.rawUpdate(
+             'UPDATE bookinfo SET imageindex = ? WHERE id = ?',
+             [imageId,bookId]);
+       }
+       return imageId;
+     }catch(exception){
+       debugPrint(exception.toString());
+       return -1;
+     }
+  }
   /// insert a bookinfo object
   static Future<int> insertBookInfo(BookInfo bookinfo) async{
 
@@ -99,9 +122,10 @@ class dbutil{
         String category = bookinfo.category;
         String flags = bookinfo.flags;
         String remark = bookinfo.remark;
+        int imageindex = bookinfo.image_index;
 
         resultId = await dbClient.rawInsert(
-            "INSERT INTO bookinfo(bookname,favor_rate,borrow_time,return_time,source,owner,category,flags,remark) VALUES('$bookname',$favor_rate,'$borrow_time','$return_time','$source','$owner','$category','$flags','$remark' )",
+            "INSERT INTO bookinfo(bookname,favor_rate,borrow_time,return_time,source,owner,category,flags,imageindex,remark) VALUES('$bookname',$favor_rate,'$borrow_time','$return_time','$source','$owner','$category','$flags',$imageindex,'$remark' )",
         );
 
        // resultId = await dbClient.insert(_BookInfoTable, bookinfo.toMap(),{""});

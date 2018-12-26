@@ -4,10 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:transparent_image/transparent_image.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-//import 'package:flutter_date_picker/flutter_date_picker.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../custcontroller/rating_bar.dart';
 import '../custcontroller/TextCombox.dart';
@@ -56,7 +54,7 @@ class AddBookFormState extends State<AddBookForm> {
   double favor_rating = 5;
   bool _isSaveButtonEnabled = false;
   bool _isBorrowType = true;
-
+  int _image_source = 1;
 
   @override
   void initState() {
@@ -254,41 +252,72 @@ class AddBookFormState extends State<AddBookForm> {
          builder:(BuildContext context) {
             return new Container(
               height: 200,
-              child:  new Row(
+              child:new Column(
                 children: <Widget>[
-                  Expanded(
-                    child: Container(
-                       padding:EdgeInsets.only(bottom: 50),
-                       child:IconButton(
-                            icon: Icon(Icons.photo_album, size: 96, color: Colors.green),
-                            tooltip: '相册',
-                            onPressed:null
-                       )
-                    ),
-                    flex: 1,
+                  SizedBox(height: 16),
+                  Text('图片来源选择',style: TextStyle(fontSize: 16)),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: Text('相册',textAlign: TextAlign.center),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Text('摄像头',textAlign: TextAlign.center),
+                      )
+                    ],
                   ),
-                  Expanded(
-                    flex: 1,
-                    child:Container(
-                        padding:EdgeInsets.only(bottom: 40),
-                        child:IconButton(
-                          icon: Icon(Icons.camera_alt, size: 96, color: Colors.green),
-                          tooltip: '摄像头',
-                          onPressed:null
-                        )
-                    ),
-                  )
+                  new Row(
+                    children: <Widget>[
+                      Expanded(
+                         flex:1,
+                         child:IconButton(
+                                  icon: Icon(Icons.photo_album),
+                                  iconSize:96,
+                                  color: Colors.green,
+                                  highlightColor: Colors.yellow,
+                                  tooltip: '相册',
+                                  onPressed:(){
+                                    showImage(ImageSource.gallery);
+                                  }
+                         ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child:Container(
+                           // padding:EdgeInsets.only(bottom: 5),
+                            child:IconButton(
+                                icon: Icon(Icons.camera_alt),
+                                iconSize:96,
+                                color: Colors.green,
+                                highlightColor: Colors.yellow,
+                                tooltip: '摄像头',
+                                onPressed:(){
+                                   showImage(ImageSource.camera);
+                                }
+                            )
+                        ),
+                      )
+                    ],
+                  ),
                 ],
-              ),
+              )
             );
-         });
-      /*var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-      setState(() {
-         _image = image;
-         _image_tip = '待保存图片';
-      });*/
+      });
+
   }
 
+  void showImage(var src) async {
+    var image = await ImagePicker.pickImage(source:src);
+    setState(() {
+      //must select a image
+      if(image != null){
+        _image = image;
+        _image_tip = '待保存图片';
+      }
+    });
+  }
   void _saveBookInfo() {
     if(borrowtime_controller.text != null && borrowtime_controller.text.length > 0
         && returntime_controller.text != null && returntime_controller.text.length > 0 ){
@@ -326,6 +355,7 @@ class AddBookFormState extends State<AddBookForm> {
                                      owner_controller.text,
                                      category_controller.text,
                                      flag_controller.text,
+                                     -1,
                                      remark_controller.text);
 
         dbutil.insertBookInfo(widget.bookinfo).then((retVal) {
@@ -334,18 +364,38 @@ class AddBookFormState extends State<AddBookForm> {
             if (retVal < 0) {
               message = '添加书籍失败';
               back_color = Colors.red;
+              setState(() {
+                Fluttertoast.showToast(
+                    msg: message,
+                    toastLength: Toast.LENGTH_LONG,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIos: 1,
+                    backgroundColor: back_color,
+                    textColor:Colors.white
+                );
+              });
+            } else{
+              if(_image != null) {
+                dbutil.insertImage(_image, retVal).then((imageId) {
+                  if (imageId < 0)
+                    message += ',图片添加失败';
+                });
+              }
+              setState(() {
+                Fluttertoast.showToast(
+                    msg: message,
+                    toastLength: Toast.LENGTH_LONG,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIos: 1,
+                    backgroundColor: back_color,
+                    textColor:Colors.white
+                );
+                _image_tip = '图片已保存';
+                _buildtopContent();
+              });
             }
-            setState(() {
-               Fluttertoast.showToast(
-                  msg: message,
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIos: 1,
-                  backgroundColor: back_color,
-                  textColor:Colors.white
-               );
-              _buildtopContent();
-            });
+
+
       });
     }
   }

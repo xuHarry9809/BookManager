@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loader_search_bar/loader_search_bar.dart';
 import 'drawer_widget.dart';
 import '../util/dbutil.dart';
 import '../util/networkutil.dart';
@@ -20,7 +21,7 @@ class _MyHomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-   // dbutil.deleteDB();
+    //dbutil.deleteDB();
     dbutil.init();
     HttpUtil.getBingImageUrl().then((url){
         accountInfoPage.setImageUrl(url);
@@ -36,34 +37,33 @@ class _MyHomePageState extends State<HomePage> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          /*
-          leading: IconButton(
-              icon: Icon(Icons.menu),
-              tooltip: '账户',
-              onPressed: () => debugPrint('显示个人账户')
-          ),*/
-          title: Text(widget.title),
-          centerTitle: true,
-          actions: <Widget>[
-            IconButton(
-                icon: Icon(Icons.search),
-                tooltip: '查找',
-                onPressed: () => debugPrint('查找书籍')
-            ),
+                title: Text(widget.title),
+                centerTitle: true,
+                actions: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.refresh),
+                      tooltip: '刷新',
+                      onPressed: () => debugPrint('刷新视图')
+                  ),
+                 /* IconButton(
+                      icon: Icon(Icons.search),
+                      tooltip: '查找',
+                      onPressed: () => debugPrint('查找书籍')
+                  )*/
 
-          ],
-          elevation: 20.0,//阴影
-          bottom: TabBar(
-            unselectedLabelColor: Colors.black12,
-            indicatorColor: Colors.white12,
-            indicatorSize: TabBarIndicatorSize.label,
-            indicatorWeight: 2.0,
-            tabs: <Widget>[
-              Tab(icon:Icon(Icons.book),text: '全部',),
-              Tab(icon:Icon(Icons.bookmark_border),text: '在借',),
-              Tab(icon:Icon(Icons.library_books),text:'已还',),
-            ],
-          ),
+                ],
+                elevation: 20.0,//阴影
+                bottom: TabBar(
+                  unselectedLabelColor: Colors.black12,
+                  indicatorColor: Colors.white12,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  indicatorWeight: 2.0,
+                  tabs: <Widget>[
+                    Tab(icon:Icon(Icons.book),text: '全部',),
+                    Tab(icon:Icon(Icons.bookmark_border),text: '在借',),
+                    Tab(icon:Icon(Icons.library_books),text:'已还',),
+                  ],
+                ),
         ),
         body:TabBarView(
           children: <Widget>[

@@ -16,7 +16,7 @@ class BookInfo{
   String _Owner;             //所有者
   String _category;       //书籍类别
   String  _flags;         //书籍标签
- // int _image_index;       //书籍图片索引
+  int _image_index;       //书籍图片索引
 
 
   int get id => _id;
@@ -34,7 +34,7 @@ class BookInfo{
   String get Owner => _Owner;
   String get category => _category;
   String get flags => _flags;
- // int get image_index => _image_index;
+  int get image_index => _image_index;
   String get remark => _remark;
 
   BookInfo(this._id,
@@ -50,6 +50,7 @@ class BookInfo{
            this._Owner,
            this._category,
            this._flags,
+           this._image_index,
            this._remark);
 
   Map<String, dynamic> toMap(){
@@ -74,8 +75,8 @@ class BookInfo{
     //if(_category != null)
     map['category'] = _category;
     map['flags'] = _flags;
-   /* if(_image_index != null)
-      map["image_index"] = _image_index;*/
+    if(_image_index != null)
+      map["image_index"] = _image_index;
 
   }
 
@@ -96,7 +97,7 @@ class BookInfo{
     _Owner = map['Owner'];
     _category = map['category'];
     _flags = map['flags'];
-   // _image_index = map['image_index'];
+    _image_index = map['image_index'];
   }
 
 }
