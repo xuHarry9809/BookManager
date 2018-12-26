@@ -4,7 +4,7 @@ import 'drawer_widget.dart';
 import '../util/dbutil.dart';
 import '../util/networkutil.dart';
 import 'custcontroller/FancyFab.dart';
-
+import 'forms/allbookview.dart';
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
   final String title;
@@ -67,7 +67,8 @@ class _MyHomePageState extends State<HomePage> {
         ),
         body:TabBarView(
           children: <Widget>[
-            Icon(Icons.book,size: 128.0,color: Colors.black12),
+          //  Icon(Icons.book,size: 128.0,color: Colors.black12),
+            new AllBookView(),
             Icon(Icons.book,size: 128.0,color: Colors.red),
             Icon(Icons.book,size: 128.0,color: Colors.red),
           ],
