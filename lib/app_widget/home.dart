@@ -21,7 +21,7 @@ class _MyHomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    //dbutil.deleteDB();
+   // dbutil.deleteDB();
     dbutil.init();
     HttpUtil.getBingImageUrl().then((url){
         accountInfoPage.setImageUrl(url);
