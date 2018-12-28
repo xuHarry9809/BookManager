@@ -171,7 +171,7 @@ class AddBookFormState extends State<AddBookForm> {
               child: Chip(
                 label: Text(widget.bookinfo.category),
                 padding: EdgeInsets.all(4.0),
-                labelStyle: TextStyle(fontSize: 14, color: Colors.white),
+                labelStyle: TextStyle(fontSize: 12, color: Colors.white),
                 backgroundColor: Colors.blue,
               )),
         ),
@@ -186,7 +186,7 @@ class AddBookFormState extends State<AddBookForm> {
               child: Chip(
                 label: Text(widget.bookinfo.flags),
                 padding: EdgeInsets.all(4.0),
-                labelStyle: TextStyle(fontSize: 14, color: Colors.white),
+                labelStyle: TextStyle(fontSize: 12, color: Colors.white),
                 backgroundColor: Colors.red[400],
               )),
         )
@@ -399,6 +399,8 @@ class AddBookFormState extends State<AddBookForm> {
     }
   }
 
+  /* ListView(padding: EdgeInsets.all(4.0), shrinkWrap: true, children: <
+                Widget>[*/
   Widget _buildbottomContent() {
     return new Container(
         color: backColors, // Colors.yellow[300],
@@ -434,43 +436,43 @@ class AddBookFormState extends State<AddBookForm> {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Expanded(
-                  flex:2,
+              Flexible(
+                  flex: 1,
                   child: RadioListTile(
                       controlAffinity: ListTileControlAffinity.trailing,
                       value: '借阅',
                       groupValue: groupValue,
-                      title: Text('借阅',style: TextStyle(fontSize: 14)),
+                      title: Text('借阅', style: TextStyle(fontSize: 14)),
                       onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
-              Expanded(
-                  flex: 2,
+              Flexible(
+                  flex: 1,
                   child: RadioListTile(
                       controlAffinity: ListTileControlAffinity.trailing,
                       value: '购买',
                       groupValue: groupValue,
-                      title: Text('购买',style: TextStyle(fontSize: 14)),
+                      title: Text('购买', style: TextStyle(fontSize: 14)),
                       onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
-              Expanded(
-                  flex: 2,
+              Flexible(
+                  flex: 1,
                   child: RadioListTile(
                       controlAffinity: ListTileControlAffinity.trailing,
                       value: '赠送',
                       groupValue: groupValue,
-                      title: Text('赠送',style: TextStyle(fontSize: 14)),
+                      title: Text('赠送', style: TextStyle(fontSize: 14)),
                       onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
-              Expanded(
-                  flex: 2,
+              Flexible(
+                  flex: 1,
                   child: RadioListTile(
                       controlAffinity: ListTileControlAffinity.trailing,
                       value: '其他',
                       groupValue: groupValue,
-                      title: Text('其他',style: TextStyle(fontSize: 14)),
+                      title: Text('其他', style: TextStyle(fontSize: 14)),
                       onChanged: (String val) {
                         _updateRadioVal(val);
                       })),
