@@ -26,10 +26,10 @@ class HomePage extends StatefulWidget {
 class _MyHomePageState extends State<HomePage> {
   int _counter = 0;
 
-  static const double icon_size = 30;
-  static const double number_size = 28;
-  static const double text_size = 16;
-  static const double circle_maxradius = 28;
+  static const double icon_size = 20;
+  static const double number_size = 20;
+  static const double text_size = 12;
+  static const double circle_maxradius = 20;
 
   int all_number = 0;
   int borrow_number = 0;
@@ -43,20 +43,12 @@ class _MyHomePageState extends State<HomePage> {
    // dbutil.init();
    // initData();
 
-
-
-
-    // TODO: implement initState
+   // TODO: implement initState
     super.initState();
     //dbutil.deleteDB();
 
     dbutil.init().then((onValue){
-      dbutil.getStatData().then((retVal){
-        setState(() {
-          all_number = retVal;
-          _buildStatBlock();
-        });
-      });
+       _initData();
     });
     HttpUtil.getBingImageUrl().then((url) {
       accountInfoPage.setImageUrl(url);
@@ -64,18 +56,11 @@ class _MyHomePageState extends State<HomePage> {
 
   }
 
-  void initData(){
-    dbutil.getStatData().then((retVal){
-      setState(() {
-        all_number = retVal;
-        _buildStatBlock();
-      });
-    });
-
-   // String query_allbook = 'select count(*) from bookinfo';
-   // String query_borrowbook = query_allbook + " where borrow_time != ''";
-   // String query_returnbook = query_allbook + " where return_time != ''";
-    /*dbutil.getStatData(query_allbook).then((retAll){
+  void _initData(){
+    String query_allbook = 'select count(*) from bookinfo';
+    String query_borrowbook = query_allbook + " where borrow_time != ''";
+    String query_returnbook = query_allbook + " where return_time != ''";
+    dbutil.getStatData(query_allbook).then((retAll){
         all_number = retAll;
         debugPrint(all_number.toString());
         dbutil.getStatData(query_borrowbook).then((retBorrow){
@@ -90,7 +75,8 @@ class _MyHomePageState extends State<HomePage> {
 
             });
         });
-    });*/
+    });
+
 
   }
 
@@ -105,7 +91,7 @@ class _MyHomePageState extends State<HomePage> {
 
   Widget _buildStatBlock(){
     return Padding(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(18),
       child: Column(
         children: <Widget>[
           _buildTile(
@@ -226,7 +212,7 @@ class _MyHomePageState extends State<HomePage> {
                 IconButton(
                     icon: Icon(Icons.refresh),
                     tooltip: '刷新',
-                    onPressed: () { initData(); }),
+                    onPressed: () { _initData(); }),
                 IconButton(
                       icon: Icon(Icons.search),
                       tooltip: '查找',

@@ -158,12 +158,11 @@ class dbutil{
     dbClient.close();
   }
 
-  static Future<int> getStatData() async {
+  static Future<int> getStatData(String sql) async {
 
-    String query_allbook = 'select count(*) from bookinfo';
     try {
         var dbClient = await _database;
-        var  result = await dbClient.rawQuery(query_allbook);
+        var  result = await dbClient.rawQuery(sql);
         return result[0]['count(*)'];
     }catch(exception){
       debugPrint(exception.toString());
