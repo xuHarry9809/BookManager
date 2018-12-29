@@ -1,11 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:loader_search_bar/loader_search_bar.dart';
 import 'drawer_widget.dart';
 import '../util/dbutil.dart';
 import '../util/networkutil.dart';
 import 'custcontroller/FancyFab.dart';
-import 'forms/allbookview.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import '../model/book.dart';
+import 'forms/addbook_form.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
@@ -26,72 +26,172 @@ class HomePage extends StatefulWidget {
 class _MyHomePageState extends State<HomePage> {
   int _counter = 0;
 
-  static const double icon_size = 30;
-  static const double number_size = 28;
-  static const double text_size = 16;
-  static const double circle_maxradius = 28;
+  static const double icon_size = 24;
+  static const double number_size = 20;
+  static const double text_size = 12;
+  static const double circle_maxradius = 24;
 
   int all_number = 0;
   int borrow_number = 0;
   int return_number = 0;
+  List<BookInfo> books = [];
+  final List<String> menu_texts = ['标记为已还','编辑','删除'];
 
   AccountInfoPage accountInfoPage =
       new AccountInfoPage(username: 'testuser', email: 'testuser@163.com');
 
   @override
   void initState() {
-   // dbutil.init();
-   // initData();
-
-
-
-
     // TODO: implement initState
     super.initState();
-    //dbutil.deleteDB();
-
-    dbutil.init().then((onValue){
-      dbutil.getStatData().then((retVal){
-        setState(() {
-          all_number = retVal;
-          _buildStatBlock();
-        });
-      });
+    dbutil.init().then((onValue) {
+      _initData();
     });
     HttpUtil.getBingImageUrl().then((url) {
       accountInfoPage.setImageUrl(url);
     });
-
   }
 
-  void initData(){
-    dbutil.getStatData().then((retVal){
-      setState(() {
-        all_number = retVal;
-        _buildStatBlock();
+  void _initData() {
+    String query_allbook = 'select count(*) from bookinfo';
+    String query_borrowbook = query_allbook + " where borrow_time != '' and return_time == ''";
+    String query_returnbook = query_allbook + " where return_time != ''";
+    dbutil.getStatData(query_allbook).then((retAll) {
+      all_number = retAll;
+      //debugPrint(all_number.toString());
+      dbutil.getStatData(query_borrowbook).then((retBorrow) {
+        borrow_number = retBorrow;
+        //debugPrint(borrow_number.toString());
+        dbutil.getStatData(query_returnbook).then((retReturn) {
+          // debugPrint(return_number.toString());
+          return_number = retReturn;
+          setState(() {
+            _buildStatBlock();
+          });
+        });
       });
     });
+    dbutil.getAllBook().then((bookitems) {
+      setState(() {
+        books = bookitems;
+        if(books.length > 0){
+            for(int i=0;i<books.length;i++){
+             //debugPrint(books[i].image_index.toString());
+                _getImageData(books[i].image_index,i);
+            }
+        }
+        _buildBooksView();
+      });
+    });
+  }
 
-   // String query_allbook = 'select count(*) from bookinfo';
-   // String query_borrowbook = query_allbook + " where borrow_time != ''";
-   // String query_returnbook = query_allbook + " where return_time != ''";
-    /*dbutil.getStatData(query_allbook).then((retAll){
-        all_number = retAll;
-        debugPrint(all_number.toString());
-        dbutil.getStatData(query_borrowbook).then((retBorrow){
-            borrow_number = retBorrow;
-            debugPrint(borrow_number.toString());
-            dbutil.getStatData(query_returnbook).then((retReturn){
-              debugPrint(return_number.toString());
-               return_number = retReturn;
-               setState(() {
-                   _buildStatBlock();
-               });
-
-            });
+  void _getImageData(int image_index,int index){
+      if(image_index < 0)
+        books[index].setImageData("");
+      else {
+        dbutil.getImage(image_index).then((data) {
+          books[index].setImageData(data);
         });
-    });*/
+      }
 
+  }
+  createTile(BookInfo book) => Hero(
+      tag: book.bookname,
+      child: Material(
+        elevation: 15.0,
+        shadowColor: Colors.grey.shade100,
+        child: InkWell(
+
+          onLongPress: (){
+            showModalBottomSheet(
+              context: context,
+              builder: (BuildContext context){
+                return Container(
+                  height: 100,
+                  child: new ListView(
+                    children: <Widget>[
+                      ListTile(
+                        leading: Icon(Icons.edit),
+                        title: Text('编辑'),
+                        onTap: (){
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: book,))
+                          );
+                        },
+                      )
+
+                    ],
+                  ),
+                );
+              }
+
+            );
+           /*
+            showMenu<String>(
+                context: context,
+                position: ,
+                items:menu_texts.map((String val){
+                  return new PopupMenuItem<String>(
+                      child: new ListTile(
+                        leading: Icon(Icons.visibility),
+                        title: new Text(val),
+
+                      )
+                  );
+                }).toList(),
+            );*/
+          },
+          onTap: () {
+            //   Navigator.pushNamed(context, 'detail/${book.title}');
+          },
+          child: Stack(
+              alignment: const FractionalOffset(0.9, 0.1),
+              children: <Widget>[
+                Container(
+                    padding: EdgeInsets.all(5),
+                    color: Colors.white,
+                    child: Image(
+                        image:book.image_index < 0 ?AssetImage('image/bookcover.jpg'):MemoryImage(base64.decode(book.image_data)),
+                        fit: BoxFit.cover
+                    )
+                ),
+                Opacity(
+                  opacity: 0.8,
+                  child:Container(
+                    color: Colors.green,
+                    child:Text(book.bookname,style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.normal))),
+                )
+              ]),
+        ),
+      ));
+
+  Widget _buildBooksView() {
+    if (books != null && books.length > 0) {
+      return Padding(
+        padding: EdgeInsets.all(8),
+        child: CustomScrollView(
+          primary: false,
+          shrinkWrap: true,
+          slivers: <Widget>[
+            SliverPadding(
+                padding: EdgeInsets.all(16),
+                sliver: SliverGrid.count(
+                  childAspectRatio: 2 / 3,
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20.0,
+                  children:
+                      books.map<Widget>((book) => createTile(book)).toList(),
+                ))
+          ],
+        ),
+      );
+    } else
+      return Container(
+        width: 0,
+        height: 0,
+      );
   }
 
   Widget _buildTile(Widget child, {Function() onTap}) {
@@ -103,9 +203,9 @@ class _MyHomePageState extends State<HomePage> {
         child: InkWell(child: child));
   }
 
-  Widget _buildStatBlock(){
+  Widget _buildStatBlock() {
     return Padding(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(18),
       child: Column(
         children: <Widget>[
           _buildTile(
@@ -128,8 +228,7 @@ class _MyHomePageState extends State<HomePage> {
                           SizedBox(width: 6),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text('全部',
                                   style: TextStyle(
@@ -158,8 +257,7 @@ class _MyHomePageState extends State<HomePage> {
                           SizedBox(width: 6),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text('在借',
                                   style: TextStyle(
@@ -188,8 +286,7 @@ class _MyHomePageState extends State<HomePage> {
                           SizedBox(width: 6),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text('已还',
                                   style: TextStyle(
@@ -219,19 +316,20 @@ class _MyHomePageState extends State<HomePage> {
       length: 3,
       child:*/
         Scaffold(
-            appBar: AppBar(
+             appBar: AppBar(
               title: Text(widget.title),
               centerTitle: true,
               actions: <Widget>[
                 IconButton(
                     icon: Icon(Icons.refresh),
                     tooltip: '刷新',
-                    onPressed: () { initData(); }),
+                    onPressed: () {
+                      _initData();
+                    }),
                 IconButton(
-                      icon: Icon(Icons.search),
-                      tooltip: '查找',
-                      onPressed: () => debugPrint('查找书籍')
-                )
+                    icon: Icon(Icons.search),
+                    tooltip: '查找',
+                    onPressed: () => debugPrint('查找书籍'))
               ],
               elevation: 20.0, //阴影
               /*bottom: TabBar(
@@ -246,16 +344,12 @@ class _MyHomePageState extends State<HomePage> {
                   ],
                 ),*/
             ),
-            body:Column(
-              children: <Widget>[
-                _buildStatBlock()
-              ],
+            body: Column(
+              children: <Widget>[_buildStatBlock(), _buildBooksView()],
             ),
             drawer: accountInfoPage,
-            floatingActionButton:
-            new FancyFab()
-        );
-          /*TabBarView(
+            floatingActionButton: new FancyFab());
+    /*TabBarView(
           children: <Widget>[
           //  Icon(Icons.book,size: 128.0,color: Colors.black12),
             new AllBookView(),
@@ -263,13 +357,11 @@ class _MyHomePageState extends State<HomePage> {
             Icon(Icons.book,size: 128.0,color: Colors.red),
           ],
         ),*/
-           /*FloatingActionButton(
+    /*FloatingActionButton(
           onPressed: _incrementCounter,
           tooltip: '扫描添加书籍',
           child: Icon(Icons.add_a_photo),
         ),*/ // This trailing comma makes auto-formatting nicer for build methods.
-            // ),
-
-
+    // ),
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,6 @@ class AddBookForm extends StatefulWidget {
   static final String routeName = '/addbookform';
 
   BookInfo bookinfo;
-
   AddBookForm({this.bookinfo});
 
   @override
@@ -44,6 +44,7 @@ class AddBookFormState extends State<AddBookForm> {
   TextEditingController remark_controller = new TextEditingController();
 
   File _image;
+ // MemoryImage _m_image;
   String _image_tip = '请添加图片';
   static List<String> category_texts = [];
 
@@ -58,8 +59,9 @@ class AddBookFormState extends State<AddBookForm> {
 
   @override
   void initState() {
-    initData();
     super.initState();
+    initData();
+    initControl();
   }
 
   @override
@@ -68,6 +70,17 @@ class AddBookFormState extends State<AddBookForm> {
     super.dispose();
   }
 
+  void initControl(){
+    if(widget.bookinfo != null) {
+      this.bookname_controller.text = widget.bookinfo.bookname;
+      this.borrowtime_controller.text = widget.bookinfo.borrow_time;
+      this.returntime_controller.text = widget.bookinfo.return_time;
+      this.favor_rating = widget.bookinfo.favor_rate;
+      this.remark_controller.text = widget.bookinfo.remark;
+      this.groupValue = widget.bookinfo.source;
+      this.flag_controller.text = widget.bookinfo.flags;
+    }
+  }
   void initData() {
     dbutil.getAllBookCategory().then((categorynodes) {
       setState(() {
@@ -146,7 +159,7 @@ class AddBookFormState extends State<AddBookForm> {
           text_val = widget.bookinfo.ISBN;
           break;
       }
-      if (text_val.length > 0)
+      if (text_val != null && text_val.length > 0)
         return text(
           text_val,
           isBold: _isBold,
@@ -210,8 +223,8 @@ class AddBookFormState extends State<AddBookForm> {
                   padding: EdgeInsets.all(5),
                   child: Image(
                     image: _image == null
-                        ? AssetImage('image/bookcover.jpg')
-                        : FileImage(_image),
+                        ? getImage()
+                        :FileImage(_image),
                     fit: BoxFit.cover,
                   )),
             ),
@@ -221,7 +234,15 @@ class AddBookFormState extends State<AddBookForm> {
       ],
     );
   }
+ ImageProvider getImage(){
+    if(widget.bookinfo.image_data!= null &&
+        widget.bookinfo.image_data.length > 0){
+      return MemoryImage(base64.decode(widget.bookinfo.image_data));
+    }else{
+      return AssetImage('image/bookcover.jpg');
+    }
 
+ }
   Widget _buildtopContent() {
     return Container(
       color: backColors, //Colors.yellow[300],
@@ -317,6 +338,13 @@ class AddBookFormState extends State<AddBookForm> {
   }
 
   void _saveBookInfo() {
+    /*dbutil.getImage(1).then((image_str){
+      setState(() {
+        _m_image = MemoryImage(base64.decode(image_str));
+        _buildTopLeft();
+      });
+
+    });*/
     if (borrowtime_controller.text != null &&
         borrowtime_controller.text.length > 0 &&
         returntime_controller.text != null &&
