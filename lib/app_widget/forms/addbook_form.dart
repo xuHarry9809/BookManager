@@ -11,6 +11,7 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../custcontroller/rating_bar.dart';
 import '../custcontroller/TextCombox.dart';
 import '../../util/dbutil.dart';
+import '../../util/localfileutil.dart';
 import '../../model/categorynode.dart';
 import '../../model/book.dart';
 
@@ -55,7 +56,7 @@ class AddBookFormState extends State<AddBookForm> {
   double favor_rating = 5;
   bool _isSaveButtonEnabled = false;
   bool _isBorrowType = true;
-  int _image_source = 1;
+
 
   @override
   void initState() {
@@ -92,6 +93,16 @@ class AddBookFormState extends State<AddBookForm> {
         //  debugPrint(category_list.length.toString());
       });
     });
+  }
+
+  ImageProvider getImage(){
+    if(widget.bookinfo != null
+        && widget.bookinfo.image_data!= null
+        && widget.bookinfo.image_data.length > 0){
+      return MemoryImage(base64.decode(widget.bookinfo.image_data));
+    }else{
+      return AssetImage('image/bookcover.jpg');
+    }
   }
 
   Widget _buildTopRight() {
@@ -189,7 +200,15 @@ class AddBookFormState extends State<AddBookForm> {
               )),
         ),
         SizedBox(width: 4.0),
-        Material(
+        _buildFlags()
+      ];
+    } else
+      return [];
+  }
+
+  Widget _buildFlags(){
+      if(widget.bookinfo != null && widget.bookinfo.flags.length > 0){
+        return Material(
           borderRadius: BorderRadius.circular(20.0),
           shadowColor: Colors.black87,
           color: Colors.red[400],
@@ -202,12 +221,10 @@ class AddBookFormState extends State<AddBookForm> {
                 labelStyle: TextStyle(fontSize: 12, color: Colors.white),
                 backgroundColor: Colors.red[400],
               )),
-        )
-      ];
-    } else
-      return [];
+        );
+      }else
+        return Container(width: 0,height: 0,);
   }
-
   Widget _buildTopLeft() {
     return Column(
       children: <Widget>[
@@ -234,15 +251,7 @@ class AddBookFormState extends State<AddBookForm> {
       ],
     );
   }
- ImageProvider getImage(){
-    if(widget.bookinfo.image_data!= null &&
-        widget.bookinfo.image_data.length > 0){
-      return MemoryImage(base64.decode(widget.bookinfo.image_data));
-    }else{
-      return AssetImage('image/bookcover.jpg');
-    }
 
- }
   Widget _buildtopContent() {
     return Container(
       color: backColors, //Colors.yellow[300],
@@ -296,12 +305,13 @@ class AddBookFormState extends State<AddBookForm> {
                       Expanded(
                         flex: 1,
                         child: IconButton(
-                            icon: Icon(Icons.photo_album),
+                            icon: Icon(Icons.photo_library),
                             iconSize: 96,
                             color: Colors.green,
                             highlightColor: Colors.yellow,
                             tooltip: '相册',
                             onPressed: () {
+                              Navigator.pop(context);
                               showImage(ImageSource.gallery);
                             }),
                       ),
@@ -316,6 +326,7 @@ class AddBookFormState extends State<AddBookForm> {
                                 highlightColor: Colors.yellow,
                                 tooltip: '摄像头',
                                 onPressed: () {
+                                  Navigator.pop(context);
                                   showImage(ImageSource.camera);
                                 })),
                       )
@@ -336,7 +347,6 @@ class AddBookFormState extends State<AddBookForm> {
       }
     });
   }
-
   void _saveBookInfo() {
     /*dbutil.getImage(1).then((image_str){
       setState(() {
@@ -406,8 +416,9 @@ class AddBookFormState extends State<AddBookForm> {
                 textColor: Colors.white);
           });
         } else {
+          widget.bookinfo.setBookId(retVal);
           if (_image != null) {
-            dbutil.insertImage(_image, retVal).then((imageId) {
+            dbutil.insertImage(_image, widget.bookinfo.id, widget.bookinfo.bookname).then((imageId) {
               if (imageId < 0) message += ',图片添加失败';
             });
           }

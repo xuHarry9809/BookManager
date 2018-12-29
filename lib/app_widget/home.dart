@@ -44,6 +44,7 @@ class _MyHomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+   // dbutil.deleteDB();
     dbutil.init().then((onValue) {
       _initData();
     });
@@ -85,6 +86,13 @@ class _MyHomePageState extends State<HomePage> {
     });
   }
 
+  ImageProvider showImage(String image_data){
+     if(image_data != null && image_data.length > 0){
+       return MemoryImage(base64.decode(image_data));
+     }else{
+      return AssetImage('image/bookcover.jpg');
+     }
+  }
   void _getImageData(int image_index,int index){
       if(image_index < 0)
         books[index].setImageData("");
@@ -114,10 +122,14 @@ class _MyHomePageState extends State<HomePage> {
                         leading: Icon(Icons.edit),
                         title: Text('编辑'),
                         onTap: (){
+                          Navigator.pop(context);
                           Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: book,))
-                          );
+                          ).whenComplete((){
+                            _initData();
+                          });
+
                         },
                       )
 
@@ -152,7 +164,7 @@ class _MyHomePageState extends State<HomePage> {
                     padding: EdgeInsets.all(5),
                     color: Colors.white,
                     child: Image(
-                        image:book.image_index < 0 ?AssetImage('image/bookcover.jpg'):MemoryImage(base64.decode(book.image_data)),
+                        image:book.image_index < 0 ?AssetImage('image/bookcover.jpg'):showImage(book.image_data),
                         fit: BoxFit.cover
                     )
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../model/book.dart';
+import 'localfileutil.dart';
 
 class dbutil {
 
@@ -92,14 +93,18 @@ class dbutil {
   }
 
   //insert book cover image
-  static Future<int> insertImage(File imageData, int bookId) async {
+  static Future<int> insertImage(File imageData, int bookId, String bookname) async {
     int imageId = -1;
     try {
+      debugPrint("book id " + bookId.toString());
       var dbClient = await _database;
-
+      String filename = bookname + ".data";
+      File file = await LocalFileUtil.getLocalFile(filename);
       String content = base64.encode(imageData.readAsBytesSync());
+      file.writeAsStringSync(content);
+
       imageId = await dbClient.rawInsert(
-        "INSERT INTO bookimage(imagecontent) VALUES('$content')",
+        "INSERT INTO bookimage(imagecontent) VALUES('$filename')",
       );
 
       if (imageId > 0) {
@@ -122,8 +127,12 @@ class dbutil {
                 columns: ['imagecontent'],
                 where: 'id = ?',
                 whereArgs: [imageId]);
-    //  debugPrint(maps[0]['imagecontent'].toString());
-      return maps[0]['imagecontent'].toString();
+
+      String filename =  maps[0]['imagecontent'].toString();
+      File file = await LocalFileUtil.getLocalFile(filename);
+      String content = file.readAsStringSync();
+    //  debugPrint(content);
+      return content;
     }catch(exception){
       return "";
     }

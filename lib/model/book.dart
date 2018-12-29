@@ -57,6 +57,10 @@ class BookInfo{
   void setImageData(String data){
     _image_data = data;
   }
+
+  void setBookId(int id){
+    _id = id;
+  }
   Map<String, dynamic> toMap(){
     var map = new Map<String,dynamic>();
     if(_id != null)

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../forms/addbook_form.dart';
+import '../home.dart';
 class FancyFab extends StatefulWidget {
   //final Function() onPressed;
   //final String tooltip;
 //  final IconData icon;
+
 
   FancyFab(/*{this.onPressed, this.tooltip, this.icon}*/);
 
@@ -80,7 +82,10 @@ class _FancyFabState extends State<FancyFab>
           Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: null,))
-          );
+          ).whenComplete((){
+
+          });
+
         },
         tooltip: '手动录入',
         child: Icon(Icons.add),
