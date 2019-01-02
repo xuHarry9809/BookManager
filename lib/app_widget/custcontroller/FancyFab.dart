@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import '../forms/addbook_form.dart';
 import '../home.dart';
 class FancyFab extends StatefulWidget {
-  //final Function() onPressed;
-  //final String tooltip;
-//  final IconData icon;
-
 
   FancyFab(/*{this.onPressed, this.tooltip, this.icon}*/);
 
@@ -23,12 +19,14 @@ class _FancyFabState extends State<FancyFab>
   Curve _curve = Curves.easeOut;
   double _fabHeight = 56.0;
 
+
   @override
   initState() {
     _animationController =
     AnimationController(vsync: this, duration: Duration(milliseconds: 500))
       ..addListener(() {
         setState(() {});
+
       });
     _animateIcon =
         Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
@@ -83,7 +81,9 @@ class _FancyFabState extends State<FancyFab>
                 context,
                 MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: null,))
           ).whenComplete((){
-
+             MyHomePageState myhomepagestate = context.ancestorStateOfType(const TypeMatcher<MyHomePageState>());
+             myhomepagestate.initData();
+             
           });
 
         },

@@ -186,6 +186,21 @@ class dbutil {
     dbClient.close();
   }
 
+  static Future<bool> deleteBook(int bookId,int image_index) async{
+    String filepath = "";
+    try {
+      var dbClient = await _database;
+      if(image_index != null && image_index > 0) {
+        var result = await dbClient.rawQuery("select imagecontent from bookimage where id = $image_index");
+        filepath = result[0]["imagecontent"].toString();
+        debugPrint(filepath);
+      }
+      return true;
+    } catch (exception) {
+      debugPrint(exception.toString());
+      return false;
+    }
+  }
   static Future<int> getStatData(String query_sql) async {
     try {
       var dbClient = await _database;

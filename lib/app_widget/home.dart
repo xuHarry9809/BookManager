@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
 /*Material(color: Colors.blue,
@@ -23,7 +23,7 @@ class HomePage extends StatefulWidget {
             child: Icon(Icons.book,
                 color: Colors.white, size: 30.0),
           ))),*/
-class _MyHomePageState extends State<HomePage> {
+class MyHomePageState extends State<HomePage> {
   int _counter = 0;
 
   static const double icon_size = 24;
@@ -35,8 +35,7 @@ class _MyHomePageState extends State<HomePage> {
   int borrow_number = 0;
   int return_number = 0;
   List<BookInfo> books = [];
-  final List<String> menu_texts = ['标记为已还','编辑','删除'];
-
+//  final List<String> menu_texts = ['标记为已还','编辑','删除'];
   AccountInfoPage accountInfoPage =
       new AccountInfoPage(username: 'testuser', email: 'testuser@163.com');
 
@@ -46,14 +45,14 @@ class _MyHomePageState extends State<HomePage> {
     super.initState();
    // dbutil.deleteDB();
     dbutil.init().then((onValue) {
-      _initData();
+      initData();
     });
     HttpUtil.getBingImageUrl().then((url) {
       accountInfoPage.setImageUrl(url);
     });
   }
 
-  void _initData() {
+  void initData() {
     String query_allbook = 'select count(*) from bookinfo';
     String query_borrowbook = query_allbook + " where borrow_time != '' and return_time == ''";
     String query_returnbook = query_allbook + " where return_time != ''";
@@ -77,8 +76,7 @@ class _MyHomePageState extends State<HomePage> {
         books = bookitems;
         if(books.length > 0){
             for(int i=0;i<books.length;i++){
-             //debugPrint(books[i].image_index.toString());
-                _getImageData(books[i].image_index,i);
+               _getImageData(books[i].image_index,i);
             }
         }
         _buildBooksView();
@@ -93,6 +91,7 @@ class _MyHomePageState extends State<HomePage> {
       return AssetImage('image/bookcover.jpg');
      }
   }
+
   void _getImageData(int image_index,int index){
       if(image_index < 0)
         books[index].setImageData("");
@@ -101,7 +100,34 @@ class _MyHomePageState extends State<HomePage> {
           books[index].setImageData(data);
         });
       }
+  }
 
+  Future<void> _askedToLoad(BookInfo book) async {
+    return showDialog<Null>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return new AlertDialog(
+            title:Text('删除确认对话框'),
+            content: new Text('确定要删除'+ book.bookname + "吗?", style: new TextStyle(fontSize: 17.0)),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('取消'),
+                onPressed: (){
+                  Navigator.of(context).pop();
+                },
+              ),
+              new FlatButton(
+                child: new Text('确定'),
+                onPressed: (){
+                  Navigator.of(context).pop();
+                  dbutil.deleteBook(book.id, book.image_index);
+                },
+              )
+            ],
+          );
+        }
+    );
   }
   createTile(BookInfo book) => Hero(
       tag: book.bookname,
@@ -109,13 +135,12 @@ class _MyHomePageState extends State<HomePage> {
         elevation: 15.0,
         shadowColor: Colors.grey.shade100,
         child: InkWell(
-
           onLongPress: (){
             showModalBottomSheet(
               context: context,
               builder: (BuildContext context){
                 return Container(
-                  height: 100,
+                  height: 170,
                   child: new ListView(
                     children: <Widget>[
                       ListTile(
@@ -127,12 +152,25 @@ class _MyHomePageState extends State<HomePage> {
                               context,
                               MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: book,))
                           ).whenComplete((){
-                            _initData();
+                            initData();
                           });
-
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.flag),
+                        title: Text('标记为已还'),
+                        onTap: (){
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.delete),
+                        title: Text('删除'),
+                        onTap: (){
+                          Navigator.pop(context);
+                          _askedToLoad(book);
                         },
                       )
-
                     ],
                   ),
                 );
@@ -336,7 +374,7 @@ class _MyHomePageState extends State<HomePage> {
                     icon: Icon(Icons.refresh),
                     tooltip: '刷新',
                     onPressed: () {
-                      _initData();
+                      initData();
                     }),
                 IconButton(
                     icon: Icon(Icons.search),
