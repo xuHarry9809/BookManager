@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'drawer_widget.dart';
 import '../util/dbutil.dart';
 import '../util/networkutil.dart';
@@ -121,7 +122,24 @@ class MyHomePageState extends State<HomePage> {
                 child: new Text('确定'),
                 onPressed: (){
                   Navigator.of(context).pop();
-                  dbutil.deleteBook(book.id, book.image_index);
+                  dbutil.deleteBook(book.id, book.image_index).then((bResult){
+                      String message = book.bookname + '已删除';
+                      var back_color = Colors.green;
+                      if(!bResult) {
+                        message = book.bookname + '删除失败';
+                        var back_color = Colors.red;
+                      }
+                      setState(() {
+                        Fluttertoast.showToast(
+                            msg: message,
+                            toastLength: Toast.LENGTH_LONG,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIos: 1,
+                            backgroundColor: back_color,
+                            textColor: Colors.white);
+                      });
+                      initData();
+                  });
                 },
               )
             ],

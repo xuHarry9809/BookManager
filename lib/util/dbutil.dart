@@ -47,6 +47,7 @@ class dbutil {
                 "bookcategory", {"categoryname": "诗词文学", "iconindex": 58050});
             batch.insert(
                 "bookcategory", {"categoryname": "其他", "iconindex": 59692});
+
             await batch.commit();
           });
           debugPrint('create table success');
@@ -77,7 +78,6 @@ class dbutil {
 
     /*  var databasepath = await getDatabasesPath();
     String dbpath = join(databasepath, _DbName);*/
-
     try {
       var dbClient = await _database;
       dbClient.transaction((txn) async {
@@ -96,7 +96,7 @@ class dbutil {
   static Future<int> insertImage(File imageData, int bookId, String bookname) async {
     int imageId = -1;
     try {
-      debugPrint("book id " + bookId.toString());
+     // debugPrint("book id " + bookId.toString());
       var dbClient = await _database;
       String filename = bookname + ".data";
       File file = await LocalFileUtil.getLocalFile(filename);
@@ -121,7 +121,7 @@ class dbutil {
 
   static Future<String> getImage(int imageId) async {
     try {
-      debugPrint(imageId.toString());
+      //debugPrint(imageId.toString());
       var dbClient = await _database;
       List<Map> maps = await dbClient.query('bookimage',
                 columns: ['imagecontent'],
@@ -193,8 +193,23 @@ class dbutil {
       if(image_index != null && image_index > 0) {
         var result = await dbClient.rawQuery("select imagecontent from bookimage where id = $image_index");
         filepath = result[0]["imagecontent"].toString();
-        debugPrint(filepath);
       }
+
+      //delete book info and image with transaction
+      dbClient.transaction((txn) async {
+        var batch = txn.batch();
+        batch.delete("bookinfo",where: "id = ?",whereArgs: [bookId]);
+        if(image_index != null && image_index > 0)
+          batch.delete("bookimage",where: "id = ?", whereArgs: [image_index]);
+        await batch.commit().then((onValue) async {
+          //delete image file
+          if(filepath.length > 0) {
+            File file = await LocalFileUtil.getLocalFile(filepath);
+           // debugPrint(file.path);
+            file.delete();
+          }
+        });
+      });
       return true;
     } catch (exception) {
       debugPrint(exception.toString());
@@ -224,5 +239,37 @@ class dbutil {
       debugPrint(exception.toString());
       return [];
     }
+  }
+
+  //update book info and image data
+  static Future<bool> updateBook(BookInfo book,File image_data,bool bReplace) async {
+      try{
+        var dbClient = await _database;
+        int count  = await dbClient.update("bookinfo", book.toMap(),where: "id = ?",whereArgs: [book.id]);
+        if(bReplace){
+          String filepath = book.bookname + ".data";
+          File file = await LocalFileUtil.getLocalFile(filepath);
+          if(file != null){
+            String content = base64.encode(image_data.readAsBytesSync());
+            file.writeAsStringSync(content);
+          }
+
+          if(book.image_index < 0){
+            var imageId = await dbClient.rawInsert(
+              "INSERT INTO bookimage(imagecontent) VALUES('$filepath')",
+            );
+
+            if (imageId > 0) {
+              await dbClient.rawUpdate(
+                  'UPDATE bookinfo SET imageindex = ? WHERE id = ?',
+                  [imageId, book.id]);
+            }
+          }
+        }
+        return count > 0?true:false;
+      }catch(exception){
+          debugPrint(exception.toString());
+          return false;
+      }
   }
 }

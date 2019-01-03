@@ -56,7 +56,7 @@ class AddBookFormState extends State<AddBookForm> {
   double favor_rating = 5;
   bool _isSaveButtonEnabled = false;
   bool _isBorrowType = true;
-
+  bool _bReplace = false;
 
   @override
   void initState() {
@@ -80,6 +80,9 @@ class AddBookFormState extends State<AddBookForm> {
       this.remark_controller.text = widget.bookinfo.remark;
       this.groupValue = widget.bookinfo.source;
       this.flag_controller.text = widget.bookinfo.flags;
+      favor_rating = widget.bookinfo.favor_rate;
+      _isSaveButtonEnabled = true;
+      _image_tip = '请更新图片';
     }
   }
   void initData() {
@@ -125,8 +128,7 @@ class AddBookFormState extends State<AddBookForm> {
             RatingBar(
                 color: Colors.red[800],
                 starCount: 3,
-                rating:
-                    widget.bookinfo == null ? 0 : widget.bookinfo.favor_rate)
+                rating:widget.bookinfo == null ? 0 : widget.bookinfo.favor_rate)
           ],
         ),
         SizedBox(height: 32.0),
@@ -343,6 +345,8 @@ class AddBookFormState extends State<AddBookForm> {
       //must select a image
       if (image != null) {
         _image = image;
+        if(widget.bookinfo != null )
+          _bReplace = true;
         _image_tip = '待保存图片';
       }
     });
@@ -353,7 +357,6 @@ class AddBookFormState extends State<AddBookForm> {
         _m_image = MemoryImage(base64.decode(image_str));
         _buildTopLeft();
       });
-
     });*/
     if (borrowtime_controller.text != null &&
         borrowtime_controller.text.length > 0 &&
@@ -435,6 +438,34 @@ class AddBookFormState extends State<AddBookForm> {
           });
         }
       });
+    }else{
+        widget.bookinfo.setBorrowtime(this.borrowtime_controller.text);
+        widget.bookinfo.setReturntime(this.returntime_controller.text);
+        widget.bookinfo.setSource(this.groupValue);
+        widget.bookinfo.setCategory(this.category_controller.text);
+        widget.bookinfo.setFavorrate(favor_rating);
+        widget.bookinfo.setFlags(this.flag_controller.text);
+        widget.bookinfo.setOwner(this.owner_controller.text);
+        widget.bookinfo.setRemark(this.remark_controller.text);
+
+        dbutil.updateBook(widget.bookinfo, _image, _bReplace).then((bSuccess){
+            _bReplace = false;
+            String message = widget.bookinfo.bookname + "信息更新成功";
+            var back_color = Colors.green;
+            if(!bSuccess) {
+              message = widget.bookinfo.bookname + "信息更新失败";
+              back_color = Colors.red;
+            }
+
+            Fluttertoast.showToast(
+                msg: message,
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIos: 1,
+                backgroundColor: back_color,
+                textColor: Colors.white);
+
+        });
     }
   }
 
@@ -452,7 +483,7 @@ class AddBookFormState extends State<AddBookForm> {
               new RaisedButton(
                   color: Colors.green,
                   padding: EdgeInsets.all(5.0),
-                  child: Text('保存',
+                  child: Text(widget.bookinfo == null ?'保存':'更新',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   textColor: Colors.white,
@@ -483,7 +514,7 @@ class AddBookFormState extends State<AddBookForm> {
                       groupValue: groupValue,
                       title: Text('借阅', style: TextStyle(fontSize: 14)),
                       onChanged: (String val) {
-                        _updateRadioVal(val);
+                         _updateRadioVal(val);
                       })),
               Flexible(
                   flex: 1,
@@ -558,7 +589,8 @@ class AddBookFormState extends State<AddBookForm> {
                   child: new ListTile(
                       leading: Icon(Icons.assignment, size: 32),
                       title: TextField(
-                        controller: bookname_controller,
+                        enabled: widget.bookinfo == null?true:false,
+                        controller:bookname_controller,
                         onChanged: (text) {
                           if (text != null && text.length > 0) {
                             setState(() {
