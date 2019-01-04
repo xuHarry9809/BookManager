@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -241,6 +242,18 @@ class dbutil {
     }
   }
 
+  //flag the book that already return
+  static Future<bool> remarkBook(int bookId) async{
+    try {
+      var dbClient = await _database;
+      String return_date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      int count = await dbClient.rawUpdate("update bookinfo SET return_time = ? where id = ?",['$return_date',bookId]);
+      return count > 0 ? true:false;
+    }catch (exception) {
+      debugPrint(exception.toString());
+      return false;
+    }
+  }
   //update book info and image data
   static Future<bool> updateBook(BookInfo book,File image_data,bool bReplace) async {
       try{

@@ -45,7 +45,7 @@ class AddBookFormState extends State<AddBookForm> {
   TextEditingController remark_controller = new TextEditingController();
 
   File _image;
- // MemoryImage _m_image;
+
   String _image_tip = '请添加图片';
   static List<String> category_texts = [];
 
@@ -71,6 +71,27 @@ class AddBookFormState extends State<AddBookForm> {
     super.dispose();
   }
 
+  void _resetControl(){
+
+    setState(() {
+     // debugPrint('hello world');
+      widget.bookinfo = null;
+      this.bookname_controller.text = '';
+      this.borrowtime_controller.text = '';
+      this.returntime_controller.text = '';
+      this.favor_rating = 5;
+      this.remark_controller.text = '';
+      this.groupValue = '借阅';
+      this.flag_controller.text = '';
+      _isSaveButtonEnabled = false;
+      _isBorrowType = true;
+      _bReplace = false;
+      _image = null;
+      _image_tip = '请添加图片';
+      _buildtopContent();
+      _buildbottomContent();
+    });
+  }
   void initControl(){
     if(widget.bookinfo != null) {
       this.bookname_controller.text = widget.bookinfo.bookname;
@@ -80,9 +101,9 @@ class AddBookFormState extends State<AddBookForm> {
       this.remark_controller.text = widget.bookinfo.remark;
       this.groupValue = widget.bookinfo.source;
       this.flag_controller.text = widget.bookinfo.flags;
-      favor_rating = widget.bookinfo.favor_rate;
+      //favor_rating = widget.bookinfo.favor_rate;
       _isSaveButtonEnabled = true;
-      _image_tip = '请更新图片';
+      _image_tip = '';
     }
   }
   void initData() {
@@ -449,6 +470,8 @@ class AddBookFormState extends State<AddBookForm> {
         widget.bookinfo.setRemark(this.remark_controller.text);
 
         dbutil.updateBook(widget.bookinfo, _image, _bReplace).then((bSuccess){
+            if(_bReplace)
+              _image_tip='图片已更新';
             _bReplace = false;
             String message = widget.bookinfo.bookname + "信息更新成功";
             var back_color = Colors.green;
@@ -457,51 +480,59 @@ class AddBookFormState extends State<AddBookForm> {
               back_color = Colors.red;
             }
 
-            Fluttertoast.showToast(
-                msg: message,
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIos: 1,
-                backgroundColor: back_color,
-                textColor: Colors.white);
+            setState(() {
+              Fluttertoast.showToast(
+                  msg: message,
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIos: 1,
+                  backgroundColor: back_color,
+                  textColor: Colors.white);
+
+            });
 
         });
     }
   }
 
+  Widget _buildMiddleContent(){
+   return Column(children: <Widget>[
+     Row(
+       children: <Widget>[
+         SizedBox(
+           width: 16,
+         ),
+         new RaisedButton(
+             color: Colors.green,
+             padding: EdgeInsets.all(5.0),
+             child: Text(widget.bookinfo == null ?'保存':'更新',
+                 style:
+                 TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+             textColor: Colors.white,
+             colorBrightness: Brightness.light,
+             //按钮主题高亮
+             elevation: 10.0,
+             //按钮下面的阴影
+             highlightElevation: 10.0,
+             //高亮时候的阴影
+             disabledElevation: 10.0,
+             //按下的时候的阴影
+             onPressed: _isSaveButtonEnabled ? _saveBookInfo : null),
+         Spacer(),
+         Text('书籍详情    ',
+             style: TextStyle(fontSize: 20, color: Colors.black45)),
+       ],
+     ),
+     new Divider(),
+   ]);
+  }
   /* ListView(padding: EdgeInsets.all(4.0), shrinkWrap: true, children: <
                 Widget>[*/
   Widget _buildbottomContent() {
     return new Container(
         color: backColors, // Colors.yellow[300],
         child: Column(children: <Widget>[
-          Row(
-            children: <Widget>[
-              SizedBox(
-                width: 16,
-              ),
-              new RaisedButton(
-                  color: Colors.green,
-                  padding: EdgeInsets.all(5.0),
-                  child: Text(widget.bookinfo == null ?'保存':'更新',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  textColor: Colors.white,
-                  colorBrightness: Brightness.light,
-                  //按钮主题高亮
-                  elevation: 10.0,
-                  //按钮下面的阴影
-                  highlightElevation: 10.0,
-                  //高亮时候的阴影
-                  disabledElevation: 10.0,
-                  //按下的时候的阴影
-                  onPressed: _isSaveButtonEnabled ? _saveBookInfo : null),
-              Spacer(),
-              Text('书籍详情    ',
-                  style: TextStyle(fontSize: 20, color: Colors.black45)),
-            ],
-          ),
-          new Divider(),
+
           //  SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -846,24 +877,24 @@ class AddBookFormState extends State<AddBookForm> {
           backgroundColor: backColors, //Colors.yellow[300],
           elevation: 0.5,
           leading: new IconButton(
-              icon: const Icon(Icons.close),
-              color: Colors.black45,
+              icon: const Icon(Icons.chevron_left),
+              color: Colors.green,
               onPressed: () => _closeForm(context)),
           title: new Text(
             '添加/编辑书籍信息',
             style: TextStyle(color: Colors.black45),
           ),
-          /* actions: <Widget>[
+          actions: <Widget>[
             IconButton(
-                icon: Icon(Icons.save),
-                color: Colors.black45,
-                tooltip: '保存',
-                onPressed: () => debugPrint('书籍信息已保存')),
-          ],*/
+                icon: Icon(Icons.add),
+                color: Colors.green,
+                tooltip: '添加新书籍',
+                onPressed: () => _resetControl()),
+          ],
           //backgroundColor: Colors.green[500],
         ),
-        body: ListView(
-          children: <Widget>[_buildtopContent(), _buildbottomContent()],
+        body:Column(
+          children: <Widget>[_buildtopContent(),_buildMiddleContent(),Flexible(child:ListView( padding:  new EdgeInsets.symmetric(vertical: 8.0),children: <Widget>[_buildbottomContent()],)) ],
         ));
   }
 

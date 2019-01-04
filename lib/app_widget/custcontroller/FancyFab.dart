@@ -76,11 +76,14 @@ class _FancyFabState extends State<FancyFab>
         heroTag: 'manual_input',
         mini: true,
         onPressed:() {
-          //Navigator.pop(context);
+         // Navigator.pop(context);
+          _animationController.reverse();
+          isOpened = !isOpened;
           Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AddBookForm(bookinfo: null,))
           ).whenComplete((){
+
              MyHomePageState myhomepagestate = context.ancestorStateOfType(const TypeMatcher<MyHomePageState>());
              myhomepagestate.initData();
              
